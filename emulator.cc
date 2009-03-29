@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+//did this work??
 
 int text[2*1024];
 int static[4*1024];
