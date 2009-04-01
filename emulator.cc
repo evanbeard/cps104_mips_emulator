@@ -23,11 +23,11 @@ int mode;
 
 function_map.put("add",
 
-		arg1 = arg2 + arg3;
+		"arg1 = arg2 + arg3"
 );
 
 function_map.put ("addi",
-		arg1 = arg2 + arg3
+		"arg1 = arg2 + arg3"
 );
 
 function_map.put("and",
