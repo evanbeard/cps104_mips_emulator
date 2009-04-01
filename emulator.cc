@@ -6,10 +6,8 @@
 
 using namespace std;
 
-
-
 int text[2*1024];
-int static[4*1024];
+int staticData[4*1024];
 int stack[2*1024];
 
 int stack_pointer = 0x7fffefff;
@@ -23,100 +21,74 @@ int mode;
 //mode 1 = step through program
 
 
+function_map.put("add",
 
-function_map.put(add,
+		arg1 = arg2 + arg3;
+);
 
-		 arg1 = arg2 + arg3;
-		 );
+function_map.put ("addi",
+		arg1 = arg2 + arg3
+);
 
-function_map.put(addi,
-		 arg1 = arg2 + arg3
-		 );
+function_map.put("and",
+		arg1 = arg2&arg3;
+);
 
-function_map.put(and,
-		 arg1 = arg2&arg3;
-		 );
+function_map.put("or",
+		arg1 = arg2|arg3;
+);
 
-function_map.put(or,
-		 arg1 = arg2|arg3;
-		 );
+void parseLine(string lineOfRegistryCode) {
 
+	//parse the line into the argument argument_name and arguments into arg1, arg2, and arg3
 
-
-
-
-void parseLine(string lineOfRegistryCode){
-
-  //parse the line into the argument argument_name and arguments into arg1, arg2, and arg3
-
-  loadHelper(argumentName, arg1, arg2, arg3);
+	loadHelper(argumentName, arg1, arg2, arg3);
 
 }
 
-void loadHelper(string argumentName, string arg1, string arg2, string arg3){
+void loadHelper(string argumentName, string arg1, string arg2, string arg3) {
 
- st
-
+	st
 
 }
 
 int main(int argc, char* argv[])
 {
-  cout << "argc = " << argc << endl; 
-  if (argv[1]=0){ //if user passes run to completion mode
+	cout << "argc = " << argc << endl;
+	if (argv[1]=0) { //if user passes run to completion mode
 
 
- 
+	} else { //single step through program
 
 
-  } else { //single step through program
+		while(1) {
+			string input;
+			cin >> input;
+
+			//      p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
+			//	p all print the contents of all registers, including the PC, HI, & LO in hex
+			//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
+			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command 
 
 
-    while(1){
-      string input;
-      cin >> input;
+			if (input == 'p') { //change this to if command starts with p, not equals p
 
 
-      //      p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
-	//	p all print the contents of all registers, including the PC, HI, & LO in hex
-	//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
-	//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command 
+				for(int i=0; i<32; i++;) {
 
+					cout << registers[i] << endl;
+				}
 
-      if (input == 'p'){ //change this to if command starts with p, not equals p
+			}
 
+			if (input =='d') {
 
-	for(int i=0; i<32; i++;){
-	  
-	  cout << registers[i] << endl;
+			}
+
+			if (input == 's') {
+
+			}
+
+		}
+
 	}
-
-
-}
-
-if (input =='d'){
-
-
-}
-
-if (input == 's'){
-
-
-}
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-}
