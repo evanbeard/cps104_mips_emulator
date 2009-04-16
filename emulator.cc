@@ -22,7 +22,6 @@ int mode;
 
 
 function_map.put("add",
-
 		"arg1 = arg2 + arg3"
 );
 
@@ -52,8 +51,7 @@ void loadHelper(string argumentName, string arg1, string arg2, string arg3) {
 
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
 	if (argv[1]=0) { //if user passes run to completion mode
 
@@ -61,7 +59,7 @@ int main(int argc, char* argv[])
 	} else { //single step through program
 
 
-		while(1) {
+		while (1) {
 			string input;
 			cin >> input;
 
@@ -74,12 +72,13 @@ int main(int argc, char* argv[])
 			if (input == 'p') { //change this to if command starts with p, not equals p
 
 
-				for(int i=0; i<32; i++;) {
+				for(int i=0; i<32; i++;
+						) {
 
-					cout << registers[i] << endl;
-				}
+							cout << registers[i] << endl;
+						}
 
-			}
+					}
 
 			if (input =='d') {
 
@@ -92,3 +91,4 @@ int main(int argc, char* argv[])
 		}
 
 	}
+}
