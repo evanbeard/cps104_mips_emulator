@@ -37,11 +37,15 @@ function_map.put("or",
 		arg1 = arg2|arg3;
 );
 
-void parseLine(string lineOfRegistryCode) {
+void parseLine(int instruction) {
 
-	//parse the line into the argument argument_name and arguments into arg1, arg2, and arg3
+	//parse registry code
+	int opcode = (instruction & 0xFC000000) >> 26;
+	
 	switch (opcode) {
-		case c1:
+		case 000000:
+		
+		
 	}
 }
 
