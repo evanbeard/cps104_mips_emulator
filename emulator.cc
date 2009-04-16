@@ -40,9 +40,9 @@ function_map.put("or",
 void parseLine(string lineOfRegistryCode) {
 
 	//parse the line into the argument argument_name and arguments into arg1, arg2, and arg3
-
-	loadHelper(argumentName, arg1, arg2, arg3);
-
+	switch (opcode) {
+		case c1:
+	}
 }
 
 void loadHelper(string argumentName, string arg1, string arg2, string arg3) {
