@@ -9,7 +9,7 @@ using namespace std;
 int text[2*1024];
 int staticData[4*1024];
 int stack[2*1024];
-
+//Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
 
@@ -76,11 +76,88 @@ void parseLine(int instruction) {
 	}
 }
 
-void loadHelper(string argumentName, string arg1, string arg2, string arg3) {
+void getAddress(int address){
+  if(address>0x7fffeffc && address < 0x00400000){
+    return stack[address - 0x7fffeffc];
+  }
 
-	st
+  if(address>0x00400000 && address < 0x10010000){
+    return text[address - 0x00400000];
+  }
+
+  if(address > 0x10010000){
+    return staticData[address - 0x10010000];
+	    }
+}
+
+void lb(int a, int b, int c){
+  unsigned int bval = registers[b];
+ registers[a] = getAddress(bval+registers[c]);
+}
+
+void lbu(int a, int b, int c){
+
+ registers[a] = getAddress(registers[b]+registers[c]);
+}
+
+void lw(int a, int b, int c){
+
+  int a = getAddress[registers[b]+registers[c]];
+  //need to load address at registers[b]+register[c] and the three bytes after that address
+  //how do I load an entire word aka put these 4 bytes together?
+
+registers[a]=
 
 }
+
+void add(int a, int b, int c){
+
+  registers[a] = registers[b] + registers[c];
+
+}
+
+
+
+
+LB load byte
+LBU load byte unsigned
+LW load word
+SB store byte
+SW store word
+LUI load upper immediate
+ADD add
+ADDI add immediate
+ADDU add without overflow
+ADDIU add immediate without overflow
+AND and
+MULT multiply
+MULTU unsigned multiply
+OR or
+ORI or immediate
+XOR xor
+SLL shift left logical
+SRA shift right arithmetic
+SRL shift right logical
+SUB subtract with overflow
+SUBU subtract without overflow
+SLT set less than
+SLTI set less than immediate
+SLTU set less than unsigned
+SLTIU set less than immediate unsigned
+BEQ branch on equal
+BGEZ branch on greater than equal zero
+BGTZ branch on greater than zero
+BLEZ branch on less than equal zero
+BLTZ branch on less than zero
+BNE branch on not equal
+J jump
+JAL jump and link
+JR jump register
+MFHI move from HI register
+MFLO move from LO register
+SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
+
+
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
