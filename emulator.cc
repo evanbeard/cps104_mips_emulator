@@ -256,7 +256,7 @@ void syscall() {
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-		printf("%s", registers[4]); //registers 4-7 are a0-a3
+	  printf("%s", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
 		scanf("%i", &v0);
@@ -486,8 +486,12 @@ void readFile(string filename) {
 		if (entireFile[j] == "DATA SEGMENT\n") {
 			break;
 		}
-		text[j]=atoi(entireFile[j]);
+		
+
+		int* current =  &entireFile[j];
+		text[j]=atoi(current);
 	}
+
 
 	int k;
 	for (k = 0; k<entireFile.size() - j; k++) {
