@@ -288,7 +288,7 @@ void ori (int dreg, int a, int c){
 	registers[dreg] = registers[a] | c;
 }
 
-void xorfunc (int dreg, int reg1, int reg2){
+void xorfunct (int dreg, int reg1, int reg2){
 	registers[dreg] = (registers[reg1]&(!registers[reg2])) |
 	(registers[reg2]&(!registers[reg1]));
 }
