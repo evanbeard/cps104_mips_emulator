@@ -64,9 +64,12 @@ void lbu(int a, unsigned int b, int c) {
 
 void lw(int a, int b, int c) {
 
-	int a = getAddress[b+registers[c]] + getAddress[b+registers[c]+1] <<8
-			+ getAddress[b+registers[c]+2] << 16 + getAddress[b+registers[c]+3]
-			<< 24;
+  registers[a] =
+    (getAddress(b+registers[c]))
+ + 
+    (getAddress(b+registers[c]+1) << 8)
+    + (getAddress(b+registers[c]+2) << 16) 
++ (getAddress(b+registers[c]+3) << 24);
 }
 
 void sb(int a, int b, int c) {
@@ -164,51 +167,65 @@ void subu(int dreg, int a, int b) {
 }
 
 void slt(int dreg, int a, int b) {
-	registers[dreg] = registers[a] < registers[b];
+	if(registers[a] < registers[b])
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void slti(int dreg, int a, int c) {
-	registers[dreg] = registers[a] < c;
+	if(registers[a] < c)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void sltu(int dreg, int a, int b) {
-	unsigned int unsA = registers[a];
-	unsigned int unsB = registers[b];
-	registers[dreg] = unsA < unsB;
+	unsigned int a = registers[a];
+	unsigned int b = registers[b];
+	if(a < b)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
-void sltiu(int a, int b, int imm) {
-	
+void sltiu(int dreg, int a, int c) {
+	unsigned int a = registers[a];
+	unsigned int c = c;
+	if(a < c)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void jump(int c) {
@@ -217,7 +234,7 @@ void jump(int c) {
 
 void jal(int c) {
 	pc = c;
-	registers[31] = pc + 4;
+	registers[31] = pc + 1;
 }
 
 void jr(int a) {
