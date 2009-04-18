@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -21,45 +23,6 @@ int loreg;
 int mode;
 //mode 0 = run to completion
 //mode 1 = step through program
-
-
-void readFile(string filename) {
-	string line;
-	ifstream myfile(filename.c_str());
-	vector<string> entireFile;
-	if (myfile.is_open()) {
-
-		int i=0;
-		while (!myfile.eof() ) {
-			getline(myfile, line);
-			entireFile[i]=line;
-			i++;
-		}
-		myfile.close();
-	}
-
-	int j;
-	for (j=0; j<entireFile.size(); j++) {
-
-		if (entireFile[j] == "DATA SEGMENT\n") {
-			break;
-		}
-		text[j]=atoi(entireFile[j]);
-	}
-
-	int k;
-	for (k = 0; k<entireFile.size() - j; k++) {
-		string first =entireFile[1+j+k];
-		string::size_type pos;
-		pos=first.find(' ', 0);
-		string second=first.substr(pos, 0);
-		first=first.substr(0, pos);
-		int first = atoi(first);
-		int second = atoi(second);
-		storeAddress(first, second);
-	}
-
-}
 
 int getAddress(int address) {
 	if (address>0x7fffeffc && address < 0x00400000) {
@@ -84,15 +47,15 @@ int storeAddress(int address, int wordToStore) {
 		return text[address - 0x00400000] = wordToStore;
 
 	}
-
 	if (address > 0x10010000) {
 		return staticData[address - 0x10010000] = wordToStore;
 	}
 }
 
+
 void lb(int a, int b, int c) {
 
-	registers[a] = getAddress(b+registers[c]);
+registers[a] = getAddress(b+registers[c]);
 }
 
 void lbu(int a, unsigned int b, int c) {
@@ -266,23 +229,46 @@ void syscall() {
 	case 1:
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
 
-	case 4:
+		<<<<<<< HEAD:emulator.cc
+		case 4:
 
 		printf("%s", registers[4]); //registers 4-7 are a0-a3
+==	=====
+	void syscall() {
+		int v0 = registers[2]; // register 2 is v0
+		switch(v0) {
+			case 1:
+			printf("%i",registers[4]); //registers 4-7 are a0-a3
 
-	case 5:
-		scanf("%i", &v0);
+			case 4:
 
-	case 8:
-		int ao = registers[4];
-		int a1 = registers[5]; //NOT CORRECT yet
-		scanf("%".a0."s", &v0);
+			printf("%s",registers[4]); //registers 4-7 are a0-a3
 
-	case 10:
-		exit();
+			case 5:
+			scanf("%i", &v0);
+
+			case 8:
+			int a0 = registers[4];
+			int a1 = registers[5]; //NOT CORRECT yet
+			scanf("%".a0."s", &v0);
+			>>>>>>> 8e8d09d48d3de06ee3654dd0be1fdfa95efa87cf:emulator.cc
+
+			case 5:
+			scanf("%i", &v0);
+
+			case 8:
+			int ao = registers[4];
+			int a1 = registers[5]; //NOT CORRECT yet
+			scanf("%".a0."s", &v0);
+
+			case 10:
+			exit();
+
+		}
 
 	}
 
+}
 }
 
 /*
@@ -475,6 +461,44 @@ void parseLine(int instruction) {
 		cout << "not a valid instruction" << endl;
 		break;
 	}
+}
+
+void readFile(string filename) {
+	string line;
+	ifstream myfile(filename.c_str());
+	vector<string> entireFile;
+	if (myfile.is_open()) {
+
+		int i=0;
+		while (!myfile.eof() ) {
+			getline(myfile, line);
+			entireFile[i]=line;
+			i++;
+		}
+		myfile.close();
+	}
+
+	int j;
+	for (j=0; j<entireFile.size(); j++) {
+
+		if (entireFile[j] == "DATA SEGMENT\n") {
+			break;
+		}
+		text[j]=atoi(entireFile[j]);
+	}
+
+	int k;
+	for (k = 0; k<entireFile.size() - j; k++) {
+		string first =entireFile[1+j+k];
+		string::size_type pos;
+		pos=first.find(' ', 0);
+		string second=first.substr(pos, 0);
+		first=first.substr(0, pos);
+		int first = atoi(first);
+		int second = atoi(second);
+		storeAddress(first, second);
+	}
+
 }
 
 int main(int argc, char* argv[]) {
