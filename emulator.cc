@@ -1,4 +1,4 @@
-#include "emulator.h"
+//#include "emulator.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -20,6 +20,7 @@ int mode;
 //mode 0 = run to completion
 //mode 1 = step through program
 
+
 readFile(string filename){
   string line;
   ifstream myfile (filename);
@@ -37,19 +38,19 @@ readFile(string filename){
     myfile.close();
   }
 
-  for(j=0; j<entireFile.size(); j++){
+  for(int j=0; j<entireFile.size(); j++){
   
-    if(entireFile[j] == "DATA SEGMENT\n"{
+    if(entireFile[j] == "DATA SEGMENT\n"){
 	break;      
 }
-    text[j]=entireFile[j];
+    text[j]=atoi(entireFile[j]);
   }
 
-    for (k = 0; k<entireFile.size() - j; k++;){
+    for (int k = 0; k<entireFile.size() - j; k++){
 string first =entireFile[1+j+k]; 
 string::size_type pos;
 pos=first.find(' ',0);
-second=first.substr(pos,0);
+string second=first.substr(pos,0);
 first=first.substr(0, pos);
  int first = atoi(first);
  int second = atoi(second);
@@ -66,116 +67,8 @@ storeAddress(first, second);
 
 
 
-void parseLine(int instruction) {
 
-	// increment program pointer
-	pc += 4;
-
-	//parse registry code
-	int opcode = (instruction & 0xFC000000) >> 26;
-	// R-type
-	int rs = (instruction & 0x3E00000) >> 21;
-	int rt = (instruction & 0x1F0000) >> 16;
-	int rd = (instruction & 0xF800) >> 11;
-	int shift = (instruction & 0x7C0) >> 6;
-	// I-type
-	int imm = instruction & 0xFFFF;
-	// J-type
-	int address = instruction & 0x3FFFFFF;
-
-	switch (opcode) {
-		case 0x0:
-			// R type
-			int funct = instruction & 0x3F;
-			switch (funct) {
-				case 0x20:
-					add(rd, rs, rt);
-				case 0x21:
-					addu(rd, rs, rt);
-				case 0x24:
-					commandAnd(rd, rs, rt); // need to call it something else
-				case 0x8:
-					jr(rs);
-				case 0x10:
-					mfhi(rs);
-				case 0x12:
-					mflo(rs);
-				case 0x18:
-					mult(rs, rt);
-				case 0x19:
-					multu(rs, rt);
-				case 0x25:
-					commandOr(rd, rs, rt);
-				case 0x0:
-					sll(rd, rt, shift);
-				case 0x15A:
-					slt(rd, rs, rt);
-				case 0x15B:
-					sltu(rd, rs, rt);
-				case 0x3:
-                    sra(rs, rt, shift);
-                case 0x2:
-                    srl(rs, rt, shift);
-                case 0x22:
-                    sub(rd, rs, rt);
-                case 0x23:
-                    subu(rd, rs, rt);
-			    case 0xC:
-                    syscall();
-			    case 0x26:
-                    xor(rd, rs, rt);
-            }
-		// I-type
-		case 0x08: //addi
-			addi(rs, rt, imm);
-		case 0x09:
-			addiu(rs, rt, imm);
-		case 0x4:
-            beq(rs, rt, imm);
-        case 0x1:
-            switch (rt) {
-                case 1:
-                    bgez(rs, imm);
-                case 0:
-                    bltz(rs, imm);
-            }
-        case 0x7:
-            if (rt == 0)
-                bgtz(rs, imm);
-        case 0x6:
-            if (rt == 0)
-                blez(rs, imm);
-        case 0x5:
-            bne(rs, rt, imm);
-        case 0x20:
-            lb(rt, imm, rs);
-        case 0x24:
-            lbu(rt, imm, rs);
-        case 0xF:
-            lui(rt, imm);
-        case 0x23:
-            lw(rt, imm, rs);
-        case 0xD:
-            ori(rt, rs, imm);
-        case 0x28:
-            sb(rt, imm, rs);
-        case 0xA:
-            slti(rt, rs, imm);
-        case 0xB:
-            sltiu(rt, rs imm);
-		case 0x2B:
-            sw(rt, imm, rs);
-        // J-type
-        case 0x2:
-            j(address);
-        case 0x3:
-            jal(address);
-		default:
-			cout << "not a valid instruction" << endl;
-	}
-}
-
-void getAddress(int address){
+int getAddress(int address){
   if(address>0x7fffeffc && address < 0x00400000){
     return stack[address - 0x7fffeffc];
   }
@@ -190,7 +83,7 @@ void getAddress(int address){
 }
 
 
-void storeAddress(int address, int wordToStore){
+int storeAddress(int address, int wordToStore){
   if(address>0x7fffeffc && address < 0x00400000){
     return stack[address - 0x7fffeffc] = wordToStore;
   }
@@ -452,6 +345,160 @@ SYSCALL system call-like facilities that SPIM programs can use (implement syscal
 */
 
 
+void parseLine(int instruction) {
+
+	// increment program pointer
+	pc += 4;
+
+	//parse registry code
+	int opcode = (instruction & 0xFC000000) >> 26;
+	// R-type
+	int rs = (instruction & 0x3E00000) >> 21;
+	int rt = (instruction & 0x1F0000) >> 16;
+	int rd = (instruction & 0xF800) >> 11;
+	int shift = (instruction & 0x7C0) >> 6;
+	int funct = instruction & 0x3F;
+
+	// I-type
+	int imm = instruction & 0xFFFF;
+	// J-type
+	int address = instruction & 0x3FFFFFF;
+
+	switch (opcode) {
+	case 0x0:
+			// R type
+			switch (funct) {
+				case 0x20:
+					add(rd, rs, rt);
+					break;
+				case 0x21:
+					addu(rd, rs, rt);
+					break;
+				case 0x24:
+					andfunc(rd, rs, rt); // need to call it something else
+					break;
+				case 0x8:
+				  jr(rs);
+					break;
+				case 0x10:
+					mfhi(rs);
+					break;
+				case 0x12:
+					mflo(rs);
+					break;
+				case 0x18:
+					mult(rs, rt);
+					break;
+				case 0x19:
+					multu(rs, rt);
+					break;
+				case 0x25:
+					orfunc(rd, rs, rt);
+					break;
+				case 0x0:
+					sll(rd, rt, shift);
+					break;
+				case 0x15A:
+					slt(rd, rs, rt);
+					break;
+				case 0x15B:
+					sltu(rd, rs, rt);
+					break;
+				case 0x3:
+                    sra(rs, rt, shift);
+					break;
+                case 0x2:
+                    srl(rs, rt, shift);
+					break;
+                case 0x22:
+                    sub(rd, rs, rt);
+					break;
+                case 0x23:
+                    subu(rd, rs, rt);
+					break;
+			    case 0xC:
+                    syscall();
+					break;
+			    case 0x26:
+                    xorfunc(rd, rs, rt);
+					break;
+            }
+			break;
+		// I-type
+		case 0x08: //addi
+			addi(rs, rt, imm);
+					break;
+		case 0x09:
+			addiu(rs, rt, imm);
+					break;
+		case 0x4:
+            beq(rs, rt, imm);
+					break;
+        case 0x1:
+            switch (rt) {
+                case 1:
+                    bgez(rs, imm);
+					break;
+                case 0:
+                    bltz(rs, imm);
+					break;
+            }
+	    break;
+        case 0x7:
+            if (rt == 0)
+                bgtz(rs, imm);
+					break;
+        case 0x6:
+            if (rt == 0)
+                blez(rs, imm);
+					break;
+        case 0x5:
+            bne(rs, rt, imm);
+					break;
+        case 0x20:
+            lb(rt, imm, rs);
+					break;
+        case 0x24:
+            lbu(rt, imm, rs);
+					break;
+        case 0xF:
+            lui(rt, imm);
+					break;
+        case 0x23:
+            lw(rt, imm, rs);
+					break;
+        case 0xD:
+            ori(rt, rs, imm);
+					break;
+        case 0x28:
+            sb(rt, imm, rs);
+					break;
+        case 0xA:
+            slti(rt, rs, imm);
+					break;
+        case 0xB:
+	  sltiu(rt, rs, imm);
+					break;
+		case 0x2B:
+            sw(rt, imm, rs);
+					break;
+        // J-type
+        case 0x2:
+            jump(address);
+					break;
+        case 0x3:
+            jal(address);
+					break;
+		default:
+			cout << "not a valid instruction" << endl;
+					break;
+	}
+}
+
+
+
+
+
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
 	if (argv[1]=0) { //if user passes run to completion mode
@@ -470,8 +517,8 @@ int main(int argc, char* argv[]) {
 			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
 
 
-			if (input == 'p all') {
-				for(int i=0; i<32; i++;){
+			if (input == "p all") {
+				for(int i=0; i<32; i++){
 					printf("%x", &registers[i]);
 				}
 			}
@@ -480,7 +527,7 @@ int main(int argc, char* argv[]) {
 				printf("%x", &registers[regnum]);
 			}
 
-			if (input =='d addr') {
+			if (input =="d addr") {
 
 			}
 
