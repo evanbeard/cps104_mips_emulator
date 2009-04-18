@@ -1,4 +1,4 @@
-#include emulator.h
+#include "emulator.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -41,7 +41,7 @@ void parseLine(int instruction) {
 		case 0x0:
 			// R type
 			int funct = instruction & 0x3F;
-			switch (funct):
+			switch (funct) {
 				case 0x20:
 					add(rd, rs, rt);
 				case 0x21:
@@ -66,14 +66,64 @@ void parseLine(int instruction) {
 					slt(rd, rs, rt);
 				case 0x15B:
 					sltu(rd, rs, rt);
-
-
+				case 0x3:
+                    sra(rs, rt, shift);
+                case 0x2:
+                    srl(rs, rt, shift);
+                case 0x22:
+                    sub(rd, rs, rt);
+                case 0x23:
+                    subu(rd, rs, rt);
+			    case 0xC:
+                    syscall();
+			    case 0x26:
+                    xor(rd, rs, rt);
+            }
+		// I-type
 		case 0x08: //addi
 			addi(rs, rt, imm);
 		case 0x09:
 			addiu(rs, rt, imm);
-
-
+		case 0x4:
+            beq(rs, rt, imm);
+        case 0x1:
+            switch (rt) {
+                case 1:
+                    bgez(rs, imm);
+                case 0:
+                    bltz(rs, imm);
+            }
+        case 0x7:
+            if (rt == 0)
+                bgtz(rs, imm);
+        case 0x6:
+            if (rt == 0)
+                blez(rs, imm);
+        case 0x5:
+            bne(rs, rt, imm);
+        case 0x20:
+            lb(rt, imm, rs);
+        case 0x24:
+            lbu(rt, imm, rs);
+        case 0xF:
+            lui(rt, imm);
+        case 0x23:
+            lw(rt, imm, rs);
+        case 0xD:
+            ori(rt, rs, imm);
+        case 0x28:
+            sb(rt, imm, rs);
+        case 0xA:
+            slti(rt, rs, imm);
+        case 0xB:
+            sltiu(rt, rs imm);
+		case 0x2B:
+            sw(rt, imm, rs);
+        // J-type
+        case 0x2:
+            j(address);
+        case 0x3:
+            jal(address);
 		default:
 			cout << "not a valid instruction" << endl;
 	}
@@ -85,7 +135,7 @@ void getAddress(int address){
   }
 
   if(address>0x00400000 && address < 0x10010000){
-    return text[address - 0x00400000];
+   return text[address - 0x00400000];
   }
 
   if(address > 0x10010000){
@@ -93,24 +143,56 @@ void getAddress(int address){
 	    }
 }
 
-void lb(int a, int b, int c){
-  unsigned int bval = registers[b];
- registers[a] = getAddress(bval+registers[c]);
+
+void storeAddress(int address, int byteToStore){
+  if(address>0x7fffeffc && address < 0x00400000){
+    return stack[address - 0x7fffeffc] = byteToStore;
+  }
+
+  if(address>0x00400000 && address < 0x10010000){
+   return text[address - 0x00400000] = byteToStore;
+  }
+
+  if(address > 0x10010000){
+    return staticData[address - 0x10010000] = byteToStore;
+	    }
 }
 
-void lbu(int a, int b, int c){
 
- registers[a] = getAddress(registers[b]+registers[c]);
+void lb(int a, int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
+}
+
+void lbu(int a, unsigned int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
 }
 
 void lw(int a, int b, int c){
 
-  int a = getAddress[registers[b]+registers[c]];
-  //need to load address at registers[b]+register[c] and the three bytes after that address
-  //how do I load an entire word aka put these 4 bytes together?
+  int a = getAddress[b+registers[c]]  +
+    getAddress[b+registers[c]+1] <<8 +
+    getAddress[b+registers[c]+2] << 16 +
+    getAddress[b+registers[c]+3] << 24;
+}
 
-registers[a]=
 
+void sb(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+}
+
+
+void sw(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & OxFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
+}
+
+
+lui(int a, int b){
+  registers[a] = c << 16;
 }
 
 void add (int dreg, int a, int b){
@@ -250,13 +332,41 @@ void mfhi (int a){
 void mflo (int a){
 	registers[a] = loreg;
 }
+=======
 
+	  void syscall(){
+	    int v0 = registers[2]; // register 2 is v0
+	    switch(v0){
+	    case 1:
+	      printf(%i,registers[4]); //registers 4-7 are a0-a3
+
+	    case 4:
+
+	      printf(%s,registers[4]); //registers 4-7 are a0-a3
 
 =======
 
 
+=======
+	    case 5:
+	      scanf("%i", &v0);
+
+	    case 8:
+	      int ao = registers[4];
+	      int a1 = registers[5]; //NOT CORRECT yet
+	      scanf("%"a0"s", &v0);
+
+	    case 10:
+	      exit();
 
 
+
+	    }
+
+}
+
+
+/*
 LB load byte
 LBU load byte unsigned
 LW load word
@@ -295,6 +405,8 @@ MFHI move from HI register
 MFLO move from LO register
 SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
 
+=======
+*/
 
 
 int main(int argc, char* argv[]) {
