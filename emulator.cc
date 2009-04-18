@@ -61,26 +61,22 @@ void addi (int dreg, int a, int c){
 }
 
 void addu (int dreg, int a, int b){
-	if(registers[a] < 0){
-		registers[a] = registers[a] & 0x7FFFFFFF;
-		registers[a] +=
-	}
 
-	if(registers[a] + registers[b] < -2^31)
-			registers[dreg] = -2^31;
-		else if (registers[a] + registers[b] > 2^31-1)
+	int unsA = registers[a];
+	int unsB = registers[b];
+		if (unsA + u > 2^31-1)
 			registers[dreg] = 2^31;
 		else
-			registers[dreg] = registers[a] + registers[b];
+			registers[dreg] = unsA + unsB;
 }
 
 void addiu (int dreg, int a, int c){
-	if(registers[a] + c < -2^31)
-			registers[dreg] = -2^31;
-		else if (registers[a] + c > 2^31-1)
+	int unsA = registers[a];
+	int unsC = c;
+		if (unsA + unsC > 2^31-1)
 			registers[dreg] = 2^31;
 		else
-			registers[dreg] = registers[a] + c;
+			registers[dreg] = unsA + unsC;
 }
 
 void andfunc (int dreg, int a, int b){
