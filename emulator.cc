@@ -29,73 +29,6 @@ int getAddress(int address) {
 		return stack[address - 0x7fffeffc];
 	}
 
-readFile(string filename){
-  string line;
-  ifstream myfile (filename);
-  vector<string> entireFile;
-  if (myfile.is_open())
-  {
-
-    int i=0;
-    while (! myfile.eof() )
-    {
-      getline (myfile,line);
-      entireFile[i]=line;
-      i++;
-    }
-    myfile.close();
-  }
-
-
-  for(j=0; j<entireFile.size(); j++){
-
-    if(entireFile[j] == "DATA SEGMENT\n"{
-	break;
-=======
-  for(int j=0; j<entireFile.size(); j++){
-
-    if(entireFile[j] == "DATA SEGMENT\n"){
-	break;
-
-}
-    text[j]=atoi(entireFile[j]);
-  }
-
-
-    for (k = 0; k<entireFile.size() - j; k++;){
-string first =entireFile[1+j+k];
-=======
-    for (int k = 0; k<entireFile.size() - j; k++){
-string first =entireFile[1+j+k];
-string::size_type pos;
-pos=first.find(' ',0);
-string second=first.substr(pos,0);
-first=first.substr(0, pos);
- int first = atoi(first);
- int second = atoi(second);
-storeAddress(first, second);
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-int getAddress(int address){
-  if(address>0x7fffeffc && address < 0x00400000){
-    return stack[address - 0x7fffeffc];
-  }
-
-  if(address>0x00400000 && address < 0x10010000){
-   return text[address - 0x00400000];
-  }
-=======
 	if (address>0x00400000 && address < 0x10010000) {
 		return text[address - 0x00400000];
 	}
@@ -110,16 +43,6 @@ int storeAddress(int address, int wordToStore) {
 		return stack[address - 0x7fffeffc] = wordToStore;
 	}
 
-int storeAddress(int address, int wordToStore){
-  if(address>0x7fffeffc && address < 0x00400000){
-    return stack[address - 0x7fffeffc] = wordToStore;
-  }
-
-  if(address>0x00400000 && address < 0x10010000){
-   return text[address - 0x00400000] = wordToStore;
-
-  }
-=======
 	if (address>0x00400000 && address < 0x10010000) {
 		return text[address - 0x00400000] = wordToStore;
 
@@ -129,10 +52,9 @@ int storeAddress(int address, int wordToStore){
 	}
 }
 
-
 void lb(int a, int b, int c) {
 
-registers[a] = getAddress(b+registers[c]);
+	registers[a] = getAddress(b+registers[c]);
 }
 
 void lbu(int a, unsigned int b, int c) {
@@ -231,8 +153,7 @@ void srl (int dreg, int a, int c){
 	registers[dreg] = registers[a] >> c;
 }
 
-void sub (int dreg, int a, int b){
-=======
+
 void sub(int dreg, int a, int b) {
 	registers[dreg] = registers[a] - registers[b];
 }
@@ -313,46 +234,31 @@ void syscall() {
 	switch (v0) {
 	case 1:
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
-
-
-		case 4:
+		break;
+	case 4:
 
 		printf("%s", registers[4]); //registers 4-7 are a0-a3
-=======
-	void syscall() {
-		int v0 = registers[2]; // register 2 is v0
-		switch(v0) {
-			case 1:
-			printf("%i",registers[4]); //registers 4-7 are a0-a3
-
-			case 4:
-
-			printf("%s",registers[4]); //registers 4-7 are a0-a3
-
-			case 5:
-			scanf("%i", &v0);
-
-			case 8:
-			int a0 = registers[4];
-			int a1 = registers[5]; //NOT CORRECT yet
-			scanf("%".a0."s", &v0);
-
-			case 5:
-			scanf("%i", &v0);
-
-			case 8:
-			int ao = registers[4];
-			int a1 = registers[5]; //NOT CORRECT yet
-			scanf("%".a0."s", &v0);
-
-			case 10:
-			exit();
-
-		}
-
+		break;
+	case 5:
+		scanf("%i", &v0);
+		break;
+	case 8:
+		int a0 = registers[4];
+		int a1 = registers[5]; //NOT CORRECT yet
+		scanf("%".a0."s", &v0);
+		break;
+	case 5:
+		scanf("%i", &v0);
+		break;
+	case 8:
+		int ao = registers[4];
+		int a1 = registers[5]; //NOT CORRECT yet
+		scanf("%".a0."s", &v0);
+		break;
+	case 10:
+		exit();
+		break;
 	}
-
-}
 }
 
 /*
@@ -393,14 +299,12 @@ void syscall() {
  MFHI move from HI register
  MFLO move from LO register
  SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
-
- =======
  */
 
 void parseLine(int instruction) {
 
 	// increment program pointer
-	pc += 1;
+	pc += 4;
 
 	//parse registry code
 	int opcode = (instruction & 0xFC000000) >> 26;
@@ -577,7 +481,7 @@ void readFile(string filename) {
 		string::size_type pos;
 		pos=first.find(' ', 0);
 		string second=first.substr(pos, 0);
-		first=first.substr(0, pos);
+		string first=first.substr(0, pos);
 		int first = atoi(first);
 		int second = atoi(second);
 		storeAddress(first, second);
@@ -608,8 +512,7 @@ int main(int argc, char* argv[]) {
 				for (int i=0; i<32; i++) {
 					printf("%x", &registers[i]);
 				}
-			}
-			if (input.at(0) == 'p') {
+			} else if (input.at(0) == 'p') {
 				int regnum = atoi(input.substr(2, input.size()-2));
 				printf("%x", &registers[regnum]);
 			}
@@ -619,15 +522,15 @@ int main(int argc, char* argv[]) {
 				printf("%x", &registers[regnum]);
 			}
 
-			if (input.at(0) == 's') {
+			if (input == "s") {
 				int num = atoi(input.substr(2, input.size()-2));
 				int i;
 				int instr;
 				for (int i = 0; i < num; i++){
 					instr = text[pc];
+					cout << "Instruction: " << instr << end1;
 					parseLine(instr);
-				}
-=======
+			}
 
 		}
 
