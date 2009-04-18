@@ -181,18 +181,18 @@ void slti(int dreg, int a, int c) {
 }
 
 void sltu(int dreg, int a, int b) {
-	unsigned int a = registers[a];
-	unsigned int b = registers[b];
-	if(a < b)
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	if(unsA < unsB)
 		registers[dreg] = 1;
 	else
 		registers[dreg] = 0;
 }
 
 void sltiu(int dreg, int a, int c) {
-	unsigned int a = registers[a];
-	unsigned int c = c;
-	if(a < c)
+	unsigned int unsA = registers[a];
+	unsigned int unsC = c;
+	if(unsA < unsC)
 		registers[dreg] = 1;
 	else
 		registers[dreg] = 0;
