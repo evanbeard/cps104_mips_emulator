@@ -118,10 +118,12 @@ void mult(int a, int b) {
 	loreg = (product << 32) >> 32;
 }
 
-void multu(int dreg, int a, int b) {
+void multu (int a, int b){
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
-	registers[dreg] = unsA * unsB;
+	long product = unsA * unsB;
+	hireg = product >> 32;
+	loreg = (product << 32) >> 32;
 }
 
 void orfunc(int dreg, int a, int b) {
@@ -150,6 +152,11 @@ void sra(int dreg, int a, int c) {
 	registers[dreg] = (registers[a] >> c) + sum;
 }
 
+void srl (int dreg, int a, int c){
+	registers[dreg] = registers[a] >> c;
+}
+
+
 void sub(int dreg, int a, int b) {
 	registers[dreg] = registers[a] - registers[b];
 }
@@ -157,51 +164,69 @@ void sub(int dreg, int a, int b) {
 void subu(int dreg, int a, int b) {
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
-	registers[dreg] = unsA - registers[b];
+	registers[dreg] = unsA - unsB;
 }
 
 void slt(int dreg, int a, int b) {
-	registers[dreg] = registers[a] < registers[b];
+	if(registers[a] < registers[b])
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void slti(int dreg, int a, int c) {
-	registers[dreg] = registers[a] < c;
+	if(registers[a] < c)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void sltu(int dreg, int a, int b) {
 	unsigned int a = registers[a];
 	unsigned int b = registers[b];
-	registers[dreg] = registers[a] < registers[b];
+	if(a < b)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
+}
+
+void sltiu(int dreg, int a, int c) {
+	unsigned int a = registers[a];
+	unsigned int c = c;
+	if(a < c)
+		registers[dreg] = 1;
+	else
+		registers[dreg] = 0;
 }
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += 4 + 4*c;
+		pc += 1 + 1*c;
 }
 
 void jump(int c) {
@@ -210,7 +235,7 @@ void jump(int c) {
 
 void jal(int c) {
 	pc = c;
-	registers[31] = pc + 4;
+	registers[31] = pc + 1;
 }
 
 void jr(int a) {
@@ -514,11 +539,18 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (input =="d addr") {
-
+				int addr = atoi(input.substr(2, input.size()-2));
+				printf("%x", &registers[regnum]);
 			}
 
 			if (input == "s") {
-
+				int num = atoi(input.substr(2, input.size()-2));
+				int i;
+				int instr;
+				for (int i = 0; i < num; i++){
+					instr = text[pc];
+					cout << "Instruction: " << instr << end1;
+					parseLine(instr);
 			}
 
 		}
