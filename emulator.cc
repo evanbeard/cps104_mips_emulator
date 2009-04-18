@@ -38,15 +38,15 @@ readFile(string filename){
   }
 
   for(j=0; j<entireFile.size(); j++){
-  
+
     if(entireFile[j] == "DATA SEGMENT\n"{
-	break;      
+	break;
 }
     text[j]=entireFile[j];
   }
 
     for (k = 0; k<entireFile.size() - j; k++;){
-string first =entireFile[1+j+k]; 
+string first =entireFile[1+j+k];
 string::size_type pos;
 pos=first.find(' ',0);
 second=first.substr(pos,0);
@@ -195,7 +195,7 @@ void storeAddress(int address, int wordToStore){
     return stack[address - 0x7fffeffc] = wordToStore;
   }
 
-  if(address>0x00400000 && address < 0x10010000){ 
+  if(address>0x00400000 && address < 0x10010000){
    return text[address - 0x00400000] = wordToStore;
 
   }
@@ -303,6 +303,10 @@ void sra (int dreg, int a, int c){
 		sum += 2^(31-i);
 	}
 	registers[dreg] = (registers[a] >> c) + sum;
+}
+
+void srl (int dreg, int a, int c){
+	registers[dreg] = registers[a] >> c;
 }
 
 void sub (int dreg, int a, int b){
