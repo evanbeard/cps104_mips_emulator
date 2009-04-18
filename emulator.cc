@@ -13,6 +13,8 @@ int stack[2*1024];
 int stack_pointer = 0x7fffefff;
 int registers[32];
 int pc;
+int hireg;
+int loreg;
 
 int mode;
 //mode 0 = run to completion
@@ -111,7 +113,6 @@ registers[a]=
 
 }
 
-<<<<<<< HEAD:emulator.cc
 void add (int dreg, int a, int b){
 	registers[dreg] = registers[a] + registers[b];
 }
@@ -122,29 +123,39 @@ void addi (int dreg, int a, int c){
 
 void addu (int dreg, int a, int b){
 
-	int unsA = registers[a];
-	int unsB = registers[b];
-		if (unsA + u > 2^31-1)
-			registers[dreg] = 2^31;
-		else
-			registers[dreg] = unsA + unsB;
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	registers[dreg] = unsA + unsB;
 }
 
 void addiu (int dreg, int a, int c){
-	int unsA = registers[a];
-	int unsC = c;
-		if (unsA + unsC > 2^31-1)
-			registers[dreg] = 2^31;
-		else
-			registers[dreg] = unsA + unsC;
+	unsigned int unsA = registers[a];
+	unsigned int unsC = c;
+	registers[dreg] = unsA + unsC;
 }
 
 void andfunc (int dreg, int a, int b){
 	registers[dreg] = registers[a] & registers[b];
 }
 
-void mult (int dreg, int a, int b){
-	registers[dreg] = registers[a] * registers[b];
+void mult (int a, int b){
+	long product = registers[a] * registers[b];
+	hireg = product >> 32;
+	loreg = (product << 32) >> 32;
+}
+
+void multu (int dreg, int a, int b){
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	registers[dreg] = unsA * unsB;
+}
+
+void orfunc (int dreg, int a, int b){
+	registers[dreg] = registers[a] | registers[b];
+}
+
+void ori (int dreg, int a, int c){
+	registers[dreg] = registers[a] | c;
 }
 
 void xorfunc (int dreg, int reg1, int reg2){
@@ -166,15 +177,12 @@ void sra (int dreg, int a, int c){
 }
 
 void sub (int dreg, int a, int b){
-	if(registers[a] - registers[b] < -2^31)
-		registers[dreg] = -2^31;
-	else if (registers[a] - registers[b] > 2^31-1)
-		registers[dreg] = 2^31;
-	else
-		registers[dreg] = registers[a] - registers[b];
+	registers[dreg] = registers[a] - registers[b];
 }
 
 void subu (int dreg, int a, int b){
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
 	registers[dreg] = registers[a] - registers[b];
 }
 
@@ -187,12 +195,8 @@ void slti (int dreg, int a, int c){
 }
 
 void sltu (int dreg, int a, int b){
-	int a = registers[a];
-	int b = registers[b];
-	if(registers[a] < 0)
-		a = registers[a]*(-1) +1;
-	if(registers[b] < 0)
-		b = registers[b]*(-1) +1
+	unsigned int a = registers[a];
+	unsigned int b = registers[b];
 	registers[dreg] = registers[a] < registers[b];
 }
 
@@ -205,12 +209,50 @@ void bgez (int a, int c){
 	if(registers[a] >= 0)
 		pc += 4 + 4*c;
 }
-=======
-void add(int a, int b, int c){
 
-  registers[a] = registers[b] + registers[c];
-
+void bgtz (int a, int c){
+	if(registers[a] > 0)
+		pc += 4 + 4*c;
 }
+
+void blez (int a, int c){
+	if(registers[a] <= 0)
+		pc += 4 + 4*c;
+}
+
+void bltz (int a, int c){
+	if(registers[a] < 0)
+		pc += 4 + 4*c;
+}
+
+void bne (int a, int b, int c){
+	if(registers[a] != registers[b])
+		pc += 4 + 4*c;
+}
+
+void jump (int c){
+	pc = c;
+}
+
+void jal (int c){
+	pc = c;
+	registers[31] = pc + 4;
+}
+
+void jr (int a){
+	pc = registers[a];
+}
+
+void mfhi (int a){
+	registers[a] = hireg;
+}
+
+void mflo (int a){
+	registers[a] = loreg;
+}
+
+
+=======
 
 
 
@@ -252,7 +294,6 @@ JR jump register
 MFHI move from HI register
 MFLO move from LO register
 SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
->>>>>>> bc7d7dfdbb9145da697043f961fe6bc9e5d65759:emulator.cc
 
 
 
