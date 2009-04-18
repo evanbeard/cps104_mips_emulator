@@ -421,24 +421,23 @@ int main(int argc, char* argv[]) {
 			string input;
 			cin >> input;
 
-			//      p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
+			//  p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
 			//	p all print the contents of all registers, including the PC, HI, & LO in hex
 			//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
 			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
 
 
-			if (input == 'p') { //change this to if command starts with p, not equals p
+			if (input == 'p all') {
+				for(int i=0; i<32; i++;){
+					printf("%x", &registers[i]);
+				}
+			}
+			else if (input.at(0) == 'p'){
+				int regnum = atoi(input.substr(2, input.size()-2));
+				printf("%x", &registers[regnum]);
+			}
 
-
-				for(int i=0; i<32; i++;
-						) {
-
-							cout << registers[i] << endl;
-						}
-
-					}
-
-			if (input =='d') {
+			if (input =='d addr') {
 
 			}
 
