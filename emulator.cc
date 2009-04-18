@@ -64,9 +64,12 @@ void lbu(int a, unsigned int b, int c) {
 
 void lw(int a, int b, int c) {
 
-	int a = getAddress[b+registers[c]] + getAddress[b+registers[c]+1] <<8
-			+ getAddress[b+registers[c]+2] << 16 + getAddress[b+registers[c]+3]
-			<< 24;
+  registers[a] =
+    (getAddress(b+registers[c]))
+ +
+    (getAddress(b+registers[c]+1) << 8)
+    + (getAddress(b+registers[c]+2) << 16)
++ (getAddress(b+registers[c]+3) << 24);
 }
 
 void sb(int a, int b, int c) {
@@ -81,7 +84,7 @@ void sw(int a, int b, int c) {
 }
 
 void lui(int a, int b) {
-	registers[a] = c << 16;
+	registers[a] = b << 16;
 }
 //ADD rd, ra, rb
 void add(int dreg, int a, int b) {
@@ -166,7 +169,6 @@ void srl (int dreg, int a, int c){
 	registers[dreg] = registers[a] >> c;
 }
 
-//SUB rd, ra, rb
 void sub(int dreg, int a, int b) {
 	registers[dreg] = registers[a] - registers[b];
 }
@@ -193,18 +195,18 @@ void slti(int dreg, int a, int c) {
 }
 
 void sltu(int dreg, int a, int b) {
-	unsigned int a = registers[a];
-	unsigned int b = registers[b];
-	if(a < b)
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	if(unsA < unsB)
 		registers[dreg] = 1;
 	else
 		registers[dreg] = 0;
 }
 
 void sltiu(int dreg, int a, int c) {
-	unsigned int a = registers[a];
-	unsigned int c = c;
-	if(a < c)
+	unsigned int unsA = registers[a];
+	unsigned int unsC = c;
+	if(unsA < unsC)
 		registers[dreg] = 1;
 	else
 		registers[dreg] = 0;
@@ -268,27 +270,21 @@ void syscall() {
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-
-		printf("%s", registers[4]); //registers 4-7 are a0-a3
+	  printf("%s", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
 		scanf("%i", &v0);
 		break;
 	case 8:
-		int a0 = registers[4];
-		int a1 = registers[5]; //NOT CORRECT yet
-		scanf("%".a0."s", &v0);
-		break;
-	case 5:
-		scanf("%i", &v0);
-		break;
-	case 8:
-		int ao = registers[4];
-		int a1 = registers[5]; //NOT CORRECT yet
-		scanf("%".a0."s", &v0);
+		char str [80];
+//		int a0 = registers[4];
+//		int a1 = registers[5];
+		scanf("%s", str);
+		registers[4] = (int) &str[0];
+		registers[5] = sizeof(str)/sizeof(char) + 1;
 		break;
 	case 10:
-		exit();
+		exit(1);
 		break;
 	}
 }
@@ -506,8 +502,12 @@ void readFile(string filename) {
 		if (entireFile[j] == "DATA SEGMENT\n") {
 			break;
 		}
-		text[j]=atoi(entireFile[j]);
+
+
+		int* current =  &entireFile[j];
+		text[j]=atoi(current);
 	}
+
 
 	int k;
 	for (k = 0; k<entireFile.size() - j; k++) {
@@ -516,8 +516,8 @@ void readFile(string filename) {
 		pos=first.find(' ', 0);
 		string second=first.substr(pos, 0);
 		string first=first.substr(0, pos);
-		int first = atoi(first);
-		int second = atoi(second);
+		int firstInt = atoi(first);
+		int secondInt = atoi(second);
 		storeAddress(first, second);
 	}
 
@@ -526,7 +526,7 @@ void readFile(string filename) {
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
 
-	if (argv[1]=0) { //if user passes run to completion mode
+	if (argv[1] == 0) { //if user passes run to completion mode
 
 
 	} else { //single step through program
@@ -560,13 +560,14 @@ int main(int argc, char* argv[]) {
 				int num = atoi(input.substr(2, input.size()-2));
 				int i;
 				int instr;
-				for (int i = 0; i < num; i++){
+				for (int i = 0; i < num; i++) {
 					instr = text[pc];
 					cout << "Instruction: " << instr << end1;
 					parseLine(instr);
+				}
+
 			}
 
 		}
-
 	}
 }
