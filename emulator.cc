@@ -14,6 +14,8 @@ int stack[2*1024 / 4];
 int stack_pointer = 0x7fffefff;
 int registers[32];
 int pc;
+int hireg;
+int loreg;
 
 int mode;
 //mode 0 = run to completion
@@ -133,7 +135,7 @@ void getAddress(int address){
     return stack[address - 0x7fffeffc];
   }
 
-  if(address>0x00400000 && address < 0x10010000){ 
+  if(address>0x00400000 && address < 0x10010000){
    return text[address - 0x00400000];
   }
 
@@ -148,7 +150,7 @@ void storeAddress(int address, int byteToStore){
     return stack[address - 0x7fffeffc] = byteToStore;
   }
 
-  if(address>0x00400000 && address < 0x10010000){ 
+  if(address>0x00400000 && address < 0x10010000){
    return text[address - 0x00400000] = byteToStore;
   }
 
@@ -176,6 +178,24 @@ void lw(int a, int b, int c){
     getAddress[b+registers[c]+3] << 24;
 }
 
+
+void sb(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+}
+
+
+void sw(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & OxFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
+}
+
+
+lui(int a, int b){
+  registers[a] = c << 16;
+}
+
 void add (int dreg, int a, int b){
 	registers[dreg] = registers[a] + registers[b];
 }
@@ -186,29 +206,39 @@ void addi (int dreg, int a, int c){
 
 void addu (int dreg, int a, int b){
 
-	int unsA = registers[a];
-	int unsB = registers[b];
-		if (unsA + u > 2^31-1)
-			registers[dreg] = 2^31;
-		else
-			registers[dreg] = unsA + unsB;
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	registers[dreg] = unsA + unsB;
 }
 
 void addiu (int dreg, int a, int c){
-	int unsA = registers[a];
-	int unsC = c;
-		if (unsA + unsC > 2^31-1)
-			registers[dreg] = 2^31;
-		else
-			registers[dreg] = unsA + unsC;
+	unsigned int unsA = registers[a];
+	unsigned int unsC = c;
+	registers[dreg] = unsA + unsC;
 }
 
 void andfunc (int dreg, int a, int b){
 	registers[dreg] = registers[a] & registers[b];
 }
 
-void mult (int dreg, int a, int b){
-	registers[dreg] = registers[a] * registers[b];
+void mult (int a, int b){
+	long product = registers[a] * registers[b];
+	hireg = product >> 32;
+	loreg = (product << 32) >> 32;
+}
+
+void multu (int dreg, int a, int b){
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	registers[dreg] = unsA * unsB;
+}
+
+void orfunc (int dreg, int a, int b){
+	registers[dreg] = registers[a] | registers[b];
+}
+
+void ori (int dreg, int a, int c){
+	registers[dreg] = registers[a] | c;
 }
 
 void xorfunc (int dreg, int reg1, int reg2){
@@ -230,15 +260,12 @@ void sra (int dreg, int a, int c){
 }
 
 void sub (int dreg, int a, int b){
-	if(registers[a] - registers[b] < -2^31)
-		registers[dreg] = -2^31;
-	else if (registers[a] - registers[b] > 2^31-1)
-		registers[dreg] = 2^31;
-	else
-		registers[dreg] = registers[a] - registers[b];
+	registers[dreg] = registers[a] - registers[b];
 }
 
 void subu (int dreg, int a, int b){
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
 	registers[dreg] = registers[a] - registers[b];
 }
 
@@ -251,12 +278,8 @@ void slti (int dreg, int a, int c){
 }
 
 void sltu (int dreg, int a, int b){
-	int a = registers[a];
-	int b = registers[b];
-	if(registers[a] < 0)
-		a = registers[a]*(-1) +1;
-	if(registers[b] < 0)
-		b = registers[b]*(-1) +1
+	unsigned int a = registers[a];
+	unsigned int b = registers[b];
 	registers[dreg] = registers[a] < registers[b];
 }
 
@@ -270,25 +293,121 @@ void bgez (int a, int c){
 		pc += 4 + 4*c;
 }
 
-void add(int a, int b, int c){
+void bgtz (int a, int c){
+	if(registers[a] > 0)
+		pc += 4 + 4*c;
+}
 
-  registers[a] = registers[b] + registers[c];
+void blez (int a, int c){
+	if(registers[a] <= 0)
+		pc += 4 + 4*c;
+}
+
+void bltz (int a, int c){
+	if(registers[a] < 0)
+		pc += 4 + 4*c;
+}
+
+void bne (int a, int b, int c){
+	if(registers[a] != registers[b])
+		pc += 4 + 4*c;
+}
+
+void jump (int c){
+	pc = c;
+}
+
+void jal (int c){
+	pc = c;
+	registers[31] = pc + 4;
+}
+
+void jr (int a){
+	pc = registers[a];
+}
+
+void mfhi (int a){
+	registers[a] = hireg;
+}
+
+void mflo (int a){
+	registers[a] = loreg;
+}
+=======
+
+	  void syscall(){
+	    int v0 = registers[2]; // register 2 is v0
+	    switch(v0){
+	    case 1:
+	      printf(%i,registers[4]); //registers 4-7 are a0-a3
+
+	    case 4:
+
+	      printf(%s,registers[4]); //registers 4-7 are a0-a3
+
+=======
+
+
+=======
+	    case 5:
+	      scanf("%i", &v0);
+
+	    case 8:
+	      int ao = registers[4];
+	      int a1 = registers[5]; //NOT CORRECT yet
+	      scanf("%"a0"s", &v0);
+
+	    case 10:
+	      exit();
+
+
+
+	    }
+
 }
 
 
+/*
+LB load byte
+LBU load byte unsigned
+LW load word
+SB store byte
+SW store word
+LUI load upper immediate
+ADD add
+ADDI add immediate
+ADDU add without overflow
+ADDIU add immediate without overflow
+AND and
+MULT multiply
+MULTU unsigned multiply
+OR or
+ORI or immediate
+XOR xor
+SLL shift left logical
+SRA shift right arithmetic
+SRL shift right logical
+SUB subtract with overflow
+SUBU subtract without overflow
+SLT set less than
+SLTI set less than immediate
+SLTU set less than unsigned
+SLTIU set less than immediate unsigned
+BEQ branch on equal
+BGEZ branch on greater than equal zero
+BGTZ branch on greater than zero
+BLEZ branch on less than equal zero
+BLTZ branch on less than zero
+BNE branch on not equal
+J jump
+JAL jump and link
+JR jump register
+MFHI move from HI register
+MFLO move from LO register
+SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
 
-void sb(int a, int b, int c){
-  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
-}
-
-
-void sw(int a, int b, int c){
-  storeAddress(b+registers[c], registers[a] & OxFF);
-  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
-  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
-  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
-}
-
+=======
+*/
 
 
 int main(int argc, char* argv[]) {
