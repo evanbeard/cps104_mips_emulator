@@ -1,4 +1,4 @@
-#include emulator.h
+#include "emulator.h"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -39,7 +39,7 @@ void parseLine(int instruction) {
 		case 0x0:
 			// R type
 			int funct = instruction & 0x3F;
-			switch (funct):
+			switch (funct) {
 				case 0x20:
 					add(rd, rs, rt);
 				case 0x21:
@@ -64,14 +64,64 @@ void parseLine(int instruction) {
 					slt(rd, rs, rt);
 				case 0x15B:
 					sltu(rd, rs, rt);
-
-
+				case 0x3:
+                    sra(rs, rt, shift);
+                case 0x2:
+                    srl(rs, rt, shift);
+                case 0x22:
+                    sub(rd, rs, rt);
+                case 0x23:
+                    subu(rd, rs, rt);
+			    case 0xC:
+                    syscall();
+			    case 0x26:
+                    xor(rd, rs, rt);
+            }
+		// I-type
 		case 0x08: //addi
 			addi(rs, rt, imm);
 		case 0x09:
 			addiu(rs, rt, imm);
-
-
+		case 0x4:
+            beq(rs, rt, imm);
+        case 0x1:
+            switch (rt) {
+                case 1:
+                    bgez(rs, imm);
+                case 0:
+                    bltz(rs, imm);
+            }
+        case 0x7:
+            if (rt == 0)
+                bgtz(rs, imm);
+        case 0x6:
+            if (rt == 0)
+                blez(rs, imm);
+        case 0x5:
+            bne(rs, rt, imm);
+        case 0x20:
+            lb(rt, imm, rs);
+        case 0x24:
+            lbu(rt, imm, rs);
+        case 0xF:
+            lui(rt, imm);
+        case 0x23:
+            lw(rt, imm, rs);
+        case 0xD:
+            ori(rt, rs, imm);
+        case 0x28:
+            sb(rt, imm, rs);
+        case 0xA:
+            slti(rt, rs, imm);
+        case 0xB:
+            sltiu(rt, rs imm);
+		case 0x2B:
+            sw(rt, imm, rs);
+        // J-type
+        case 0x2:
+            j(address);
+        case 0x3:
+            jal(address);
 		default:
 			cout << "not a valid instruction" << endl;
 	}
@@ -124,7 +174,6 @@ void lw(int a, int b, int c){
     getAddress[b+registers[c]+2] << 16 +
     getAddress[b+registers[c]+3] << 24;
 }
-
 
 
 void sb(int a, int b, int c){
@@ -239,7 +288,6 @@ void bgez (int a, int c){
 }
 
 
-
 	  void syscall(){
 	    int v0 = registers[2]; // register 2 is v0
 	    switch(v0){
@@ -249,7 +297,6 @@ void bgez (int a, int c){
 	    case 4:
 
 	      printf(%s,registers[4]); //registers 4-7 are a0-a3
-
 
 	    case 5:
 	      scanf("%i", &v0);
@@ -308,7 +355,6 @@ MFHI move from HI register
 MFLO move from LO register
 SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
 */
-
 
 
 int main(int argc, char* argv[]) {
