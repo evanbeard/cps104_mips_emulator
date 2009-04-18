@@ -52,10 +52,9 @@ int storeAddress(int address, int wordToStore) {
 	}
 }
 
-
 void lb(int a, int b, int c) {
 
-registers[a] = getAddress(b+registers[c]);
+	registers[a] = getAddress(b+registers[c]);
 }
 
 void lbu(int a, unsigned int b, int c) {
@@ -81,7 +80,7 @@ void sw(int a, int b, int c) {
 	storeAddress(b+registers[c] + 3, (registers[a] & 0xFF000000) >> 24);
 }
 
-lui(int a, int b) {
+void lui(int a, int b) {
 	registers[a] = c << 16;
 }
 
@@ -228,47 +227,31 @@ void syscall() {
 	switch (v0) {
 	case 1:
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
-
-		<<<<<<< HEAD:emulator.cc
-		case 4:
+		break;
+	case 4:
 
 		printf("%s", registers[4]); //registers 4-7 are a0-a3
-==	=====
-	void syscall() {
-		int v0 = registers[2]; // register 2 is v0
-		switch(v0) {
-			case 1:
-			printf("%i",registers[4]); //registers 4-7 are a0-a3
-
-			case 4:
-
-			printf("%s",registers[4]); //registers 4-7 are a0-a3
-
-			case 5:
-			scanf("%i", &v0);
-
-			case 8:
-			int a0 = registers[4];
-			int a1 = registers[5]; //NOT CORRECT yet
-			scanf("%".a0."s", &v0);
-			>>>>>>> 8e8d09d48d3de06ee3654dd0be1fdfa95efa87cf:emulator.cc
-
-			case 5:
-			scanf("%i", &v0);
-
-			case 8:
-			int ao = registers[4];
-			int a1 = registers[5]; //NOT CORRECT yet
-			scanf("%".a0."s", &v0);
-
-			case 10:
-			exit();
-
-		}
-
+		break;
+	case 5:
+		scanf("%i", &v0);
+		break;
+	case 8:
+		int a0 = registers[4];
+		int a1 = registers[5]; //NOT CORRECT yet
+		scanf("%".a0."s", &v0);
+		break;
+	case 5:
+		scanf("%i", &v0);
+		break;
+	case 8:
+		int ao = registers[4];
+		int a1 = registers[5]; //NOT CORRECT yet
+		scanf("%".a0."s", &v0);
+		break;
+	case 10:
+		exit();
+		break;
 	}
-
-}
 }
 
 /*
@@ -309,8 +292,6 @@ void syscall() {
  MFHI move from HI register
  MFLO move from LO register
  SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
-
- =======
  */
 
 void parseLine(int instruction) {
@@ -493,7 +474,7 @@ void readFile(string filename) {
 		string::size_type pos;
 		pos=first.find(' ', 0);
 		string second=first.substr(pos, 0);
-		first=first.substr(0, pos);
+		string first=first.substr(0, pos);
 		int first = atoi(first);
 		int second = atoi(second);
 		storeAddress(first, second);
