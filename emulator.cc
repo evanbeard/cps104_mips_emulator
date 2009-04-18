@@ -56,7 +56,9 @@ int storeAddress(int address, int wordToStore){
   if(address > 0x10010000){
     return staticData[address - 0x10010000] = wordToStore;
 	    }
-}
+}Determining whether syntax check is possible
+
+
 
 
 void lb(int a, int b, int c){
