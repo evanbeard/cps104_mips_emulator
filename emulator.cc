@@ -12,16 +12,17 @@ int stack[2*1024];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
+int pc;
 
 int mode;
 //mode 0 = run to completion
 //mode 1 = step through program
 
 void parseLine(int instruction) {
-	
+
 	// increment program pointer
 	pc += 4;
-	
+
 	//parse registry code
 	int opcode = (instruction & 0xFC000000) >> 26;
 	// R-type
@@ -33,7 +34,7 @@ void parseLine(int instruction) {
 	int imm = instruction & 0xFFFF;
 	// J-type
 	int address = instruction & 0x3FFFFFF;
-	
+
 	switch (opcode) {
 		case 0x0:
 			// R type
@@ -122,7 +123,6 @@ void parseLine(int instruction) {
             j(address);
         case 0x3:
             jal(address);
-			
 		default:
 			cout << "not a valid instruction" << endl;
 	}
@@ -133,8 +133,8 @@ void getAddress(int address){
     return stack[address - 0x7fffeffc];
   }
 
-  if(address>0x00400000 && address < 0x10010000){
-    return text[address - 0x00400000];
+  if(address>0x00400000 && address < 0x10010000){ 
+   return text[address - 0x00400000];
   }
 
   if(address > 0x10010000){
@@ -142,72 +142,152 @@ void getAddress(int address){
 	    }
 }
 
-void lb(int a, int b, int c){
-  unsigned int bval = registers[b];
- registers[a] = getAddress(bval+registers[c]);
+
+void storeAddress(int address, int byteToStore){
+  if(address>0x7fffeffc && address < 0x00400000){
+    return stack[address - 0x7fffeffc] = byteToStore;
+  }
+
+  if(address>0x00400000 && address < 0x10010000){ 
+   return text[address - 0x00400000] = byteToStore;
+  }
+
+  if(address > 0x10010000){
+    return staticData[address - 0x10010000] = byteToStore;
+	    }
 }
 
-void lbu(int a, int b, int c){
 
- registers[a] = getAddress(registers[b]+registers[c]);
+void lb(int a, int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
+}
+
+void lbu(int a, unsigned int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
 }
 
 void lw(int a, int b, int c){
 
-  int a = getAddress[registers[b]+registers[c]];
-  //need to load address at registers[b]+register[c] and the three bytes after that address
-  //how do I load an entire word aka put these 4 bytes together?
+  int a = getAddress[b+registers[c]]  +
+    getAddress[b+registers[c]+1] <<8 +
+    getAddress[b+registers[c]+2] << 16 +
+    getAddress[b+registers[c]+3] << 24;
+}
 
-registers[a]=
+void add (int dreg, int a, int b){
+	registers[dreg] = registers[a] + registers[b];
+}
 
+void addi (int dreg, int a, int c){
+	registers[dreg] = registers[a] + c;
+}
+
+void addu (int dreg, int a, int b){
+
+	int unsA = registers[a];
+	int unsB = registers[b];
+		if (unsA + u > 2^31-1)
+			registers[dreg] = 2^31;
+		else
+			registers[dreg] = unsA + unsB;
+}
+
+void addiu (int dreg, int a, int c){
+	int unsA = registers[a];
+	int unsC = c;
+		if (unsA + unsC > 2^31-1)
+			registers[dreg] = 2^31;
+		else
+			registers[dreg] = unsA + unsC;
+}
+
+void andfunc (int dreg, int a, int b){
+	registers[dreg] = registers[a] & registers[b];
+}
+
+void mult (int dreg, int a, int b){
+	registers[dreg] = registers[a] * registers[b];
+}
+
+void xorfunc (int dreg, int reg1, int reg2){
+	registers[dreg] = (registers[reg1]&(!registers[reg2])) |
+	(registers[reg2]&(!registers[reg1]));
+}
+
+void sll (int dreg, int a, int c){
+	registers[dreg] = registers[a] << c;
+}
+
+void sra (int dreg, int a, int c){
+	int i;
+	int sum = 0;
+	for(i = 1; i < c; i++){
+		sum += 2^(31-i);
+	}
+	registers[dreg] = (registers[a] >> c) + sum;
+}
+
+void sub (int dreg, int a, int b){
+	if(registers[a] - registers[b] < -2^31)
+		registers[dreg] = -2^31;
+	else if (registers[a] - registers[b] > 2^31-1)
+		registers[dreg] = 2^31;
+	else
+		registers[dreg] = registers[a] - registers[b];
+}
+
+void subu (int dreg, int a, int b){
+	registers[dreg] = registers[a] - registers[b];
+}
+
+void slt (int dreg, int a, int b){
+	registers[dreg] = registers[a] < registers[b];
+}
+
+void slti (int dreg, int a, int c){
+	registers[dreg] = registers[a] < c;
+}
+
+void sltu (int dreg, int a, int b){
+	int a = registers[a];
+	int b = registers[b];
+	if(registers[a] < 0)
+		a = registers[a]*(-1) +1;
+	if(registers[b] < 0)
+		b = registers[b]*(-1) +1
+	registers[dreg] = registers[a] < registers[b];
+}
+
+void beq (int a, int b, int c){
+	if(registers[a] == registers[b])
+		pc += 4 + 4*c;
+}
+
+void bgez (int a, int c){
+	if(registers[a] >= 0)
+		pc += 4 + 4*c;
 }
 
 void add(int a, int b, int c){
 
   registers[a] = registers[b] + registers[c];
-
 }
 
 
 
+void sb(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+}
 
-LB load byte
-LBU load byte unsigned
-LW load word
-SB store byte
-SW store word
-LUI load upper immediate
-ADD add
-ADDI add immediate
-ADDU add without overflow
-ADDIU add immediate without overflow
-AND and
-MULT multiply
-MULTU unsigned multiply
-OR or
-ORI or immediate
-XOR xor
-SLL shift left logical
-SRA shift right arithmetic
-SRL shift right logical
-SUB subtract with overflow
-SUBU subtract without overflow
-SLT set less than
-SLTI set less than immediate
-SLTU set less than unsigned
-SLTIU set less than immediate unsigned
-BEQ branch on equal
-BGEZ branch on greater than equal zero
-BGTZ branch on greater than zero
-BLEZ branch on less than equal zero
-BLTZ branch on less than zero
-BNE branch on not equal
-J jump
-JAL jump and link
-JR jump register
-MFHI move from HI register
-MFLO move from LO register
-SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
+
+void sw(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & OxFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
+}
 
 
 
@@ -226,7 +306,7 @@ int main(int argc, char* argv[]) {
 			//      p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
 			//	p all print the contents of all registers, including the PC, HI, & LO in hex
 			//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
-			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command 
+			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
 
 
 			if (input == 'p') { //change this to if command starts with p, not equals p
