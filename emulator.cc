@@ -81,7 +81,7 @@ void sw(int a, int b, int c) {
 }
 
 void lui(int a, int b) {
-	registers[a] = c << 16;
+	registers[a] = b << 16;
 }
 
 void add(int dreg, int a, int b) {
@@ -115,7 +115,7 @@ void mult(int a, int b) {
 	loreg = (product << 32) >> 32;
 }
 
-void multu (int a, int b){
+void multu(int a, int b) {
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
 	long product = unsA * unsB;
@@ -149,10 +149,9 @@ void sra(int dreg, int a, int c) {
 	registers[dreg] = (registers[a] >> c) + sum;
 }
 
-void srl (int dreg, int a, int c){
+void srl(int dreg, int a, int c) {
 	registers[dreg] = registers[a] >> c;
 }
-
 
 void sub(int dreg, int a, int b) {
 	registers[dreg] = registers[a] - registers[b];
@@ -173,9 +172,13 @@ void slti(int dreg, int a, int c) {
 }
 
 void sltu(int dreg, int a, int b) {
-	unsigned int a = registers[a];
-	unsigned int b = registers[b];
-	registers[dreg] = a < a;
+	unsigned int unsA = registers[a];
+	unsigned int unsB = registers[b];
+	registers[dreg] = unsA < unsB;
+}
+
+void sltiu(int a, int b, int imm) {
+	
 }
 
 void beq(int a, int b, int c) {
@@ -236,27 +239,21 @@ void syscall() {
 		printf("%i", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-
 		printf("%s", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
 		scanf("%i", &v0);
 		break;
 	case 8:
-		int a0 = registers[4];
-		int a1 = registers[5]; //NOT CORRECT yet
-		scanf("%".a0."s", &v0);
-		break;
-	case 5:
-		scanf("%i", &v0);
-		break;
-	case 8:
-		int ao = registers[4];
-		int a1 = registers[5]; //NOT CORRECT yet
-		scanf("%".a0."s", &v0);
+		char str [80];
+//		int a0 = registers[4];
+//		int a1 = registers[5]; 
+		scanf("%s", str);
+		registers[4] = (int) &str[0];
+		registers[5] = sizeof(str)/sizeof(char) + 1;
 		break;
 	case 10:
-		exit();
+		exit(1);
 		break;
 	}
 }
@@ -492,7 +489,7 @@ void readFile(string filename) {
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
 
-	if (argv[1]=0) { //if user passes run to completion mode
+	if (argv[1] == 0) { //if user passes run to completion mode
 
 
 	} else { //single step through program
@@ -526,13 +523,13 @@ int main(int argc, char* argv[]) {
 				int num = atoi(input.substr(2, input.size()-2));
 				int i;
 				int instr;
-				for (int i = 0; i < num; i++){
+				for (int i = 0; i < num; i++) {
 					instr = text[pc];
 					cout << "Instruction: " << instr << end1;
 					parseLine(instr);
+				}
+
 			}
 
 		}
-
 	}
-}
