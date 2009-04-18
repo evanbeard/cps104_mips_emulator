@@ -73,8 +73,7 @@ void parseLine(int instruction) {
                 case 0x23:
                     subu(rd, rs, rt);
 			    case 0xC:
-			        // syscall
-			        switch ()
+                    syscall();
 			    case 0x26:
                     xor(rd, rs, rt);
             }
