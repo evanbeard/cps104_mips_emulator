@@ -81,8 +81,8 @@ void getAddress(int address){
     return stack[address - 0x7fffeffc];
   }
 
-  if(address>0x00400000 && address < 0x10010000){
-    return text[address - 0x00400000];
+  if(address>0x00400000 && address < 0x10010000){ 
+   return text[address - 0x00400000];
   }
 
   if(address > 0x10010000){
@@ -90,33 +90,60 @@ void getAddress(int address){
 	    }
 }
 
-void lb(int a, int b, int c){
-  unsigned int bval = registers[b];
- registers[a] = getAddress(bval+registers[c]);
+
+void storeAddress(int address, int byteToStore){
+  if(address>0x7fffeffc && address < 0x00400000){
+    return stack[address - 0x7fffeffc] = byteToStore;
+  }
+
+  if(address>0x00400000 && address < 0x10010000){ 
+   return text[address - 0x00400000] = byteToStore;
+  }
+
+  if(address > 0x10010000){
+    return staticData[address - 0x10010000] = byteToStore;
+	    }
 }
 
-void lbu(int a, int b, int c){
 
- registers[a] = getAddress(registers[b]+registers[c]);
+void lb(int a, int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
+}
+
+void lbu(int a, unsigned int b, int c){
+
+ registers[a] = getAddress(b+registers[c]);
 }
 
 void lw(int a, int b, int c){
 
-  int a = getAddress[registers[b]+registers[c]];
-  //need to load address at registers[b]+register[c] and the three bytes after that address
-  //how do I load an entire word aka put these 4 bytes together?
-
-registers[a]=
-
+  int a = getAddress[b+registers[c]]  +
+    getAddress[b+registers[c]+1] <<8 +
+    getAddress[b+registers[c]+2] << 16 +
+    getAddress[b+registers[c]+3] << 24;
 }
 
 void add(int a, int b, int c){
 
   registers[a] = registers[b] + registers[c];
-
 }
 
 
+
+void sb(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+}
+
+
+void sw(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & OxFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
+}
+
+void lui(int 
 
 
 LB load byte
