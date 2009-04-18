@@ -496,8 +496,8 @@ void readFile(string filename) {
 		pos=first.find(' ', 0);
 		string second=first.substr(pos, 0);
 		string first=first.substr(0, pos);
-		int first = atoi(first);
-		int second = atoi(second);
+		int firstInt = atoi(first);
+		int secondInt = atoi(second);
 		storeAddress(first, second);
 	}
 
@@ -550,3 +550,4 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
+}
