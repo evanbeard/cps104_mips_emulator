@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -19,48 +21,6 @@ int loreg;
 int mode;
 //mode 0 = run to completion
 //mode 1 = step through program
-
-
-readFile(string filename){
-  string line;
-  ifstream myfile (filename);
-  vector<string> entireFile;
-  if (myfile.is_open())
-  {
-
-    int i=0;
-    while (! myfile.eof() )
-    {
-      getline (myfile,line);
-      entireFile[i]=line;
-      i++;
-    }
-    myfile.close();
-  }
-
-  for(int j=0; j<entireFile.size(); j++){
-  
-    if(entireFile[j] == "DATA SEGMENT\n"){
-	break;      
-}
-    text[j]=atoi(entireFile[j]);
-  }
-
-    for (int k = 0; k<entireFile.size() - j; k++){
-string first =entireFile[1+j+k]; 
-string::size_type pos;
-pos=first.find(' ',0);
-string second=first.substr(pos,0);
-first=first.substr(0, pos);
- int first = atoi(first);
- int second = atoi(second);
-storeAddress(first, second);
-    }
-
-
-
-}
-
 
 
 
@@ -132,7 +92,7 @@ void sw(int a, int b, int c){
 
 
 lui(int a, int b){
-  registers[a] = c << 16;
+  registers[a] = b << 16;
 }
 
 void add (int dreg, int a, int b){
@@ -278,19 +238,19 @@ void mflo (int a){
 	    int v0 = registers[2]; // register 2 is v0
 	    switch(v0){
 	    case 1:
-	      printf(%i,registers[4]); //registers 4-7 are a0-a3
+	      printf("%i",registers[4]); //registers 4-7 are a0-a3
 
 	    case 4:
 
-	      printf(%s,registers[4]); //registers 4-7 are a0-a3
+	      printf("%s",registers[4]); //registers 4-7 are a0-a3
 
 	    case 5:
 	      scanf("%i", &v0);
 
 	    case 8:
-	      int ao = registers[4];
+	      int a0 = registers[4];
 	      int a1 = registers[5]; //NOT CORRECT yet
-	      scanf("%"a0"s", &v0);
+	      scanf("%".a0."s", &v0);
 
 	    case 10:
 	      exit();
@@ -493,6 +453,48 @@ void parseLine(int instruction) {
 			cout << "not a valid instruction" << endl;
 					break;
 	}
+}
+
+
+
+readFile(string filename){
+  string line;
+  ifstream myfile (filename);
+  vector<string> entireFile;
+  if (myfile.is_open())
+  {
+
+    int i=0;
+    while (! myfile.eof() )
+    {
+      getline (myfile,line);
+      entireFile[i]=line;
+      i++;
+    }
+    myfile.close();
+  }
+
+  for(int j=0; j<entireFile.size(); j++){
+  
+    if(entireFile[j] == "DATA SEGMENT\n"){
+	break;      
+}
+    text[j]=atoi(entireFile[j]);
+  }
+
+    for (int k = 0; k<entireFile.size() - j; k++){
+string first =entireFile[1+j+k]; 
+string::size_type pos;
+pos=first.find(' ',0);
+string second=first.substr(pos,0);
+first=first.substr(0, pos);
+ int first = atoi(first);
+ int second = atoi(second);
+storeAddress(first, second);
+    }
+
+
+
 }
 
 
