@@ -21,6 +21,52 @@ int mode;
 //mode 0 = run to completion
 //mode 1 = step through program
 
+readFile(string filename){
+  string line;
+  ifstream myfile (filename);
+  vector<string> entireFile;
+  if (myfile.is_open())
+  {
+
+    int i=0;
+    while (! myfile.eof() )
+    {
+      getline (myfile,line);
+      entireFile[i]=line;
+      i++;
+    }
+    myfile.close();
+  }
+
+  for(j=0; j<entireFile.size(); j++){
+  
+    if(entireFile[j] == "DATA SEGMENT\n"{
+	break;      
+}
+    text[j]=entireFile[j];
+  }
+
+    for (k = 0; k<entireFile.size() - j; k++;){
+string first =entireFile[1+j+k]; 
+string::size_type pos;
+pos=first.find(' ',0);
+second=first.substr(pos,0);
+first=first.substr(0, pos);
+ int first = atoi(first);
+ int second = atoi(second);
+storeAddress(first, second);
+    }
+
+
+
+}
+
+
+
+
+
+
+
 void parseLine(int instruction) {
 
 	// increment program pointer
@@ -145,17 +191,18 @@ void getAddress(int address){
 }
 
 
-void storeAddress(int address, int byteToStore){
+void storeAddress(int address, int wordToStore){
   if(address>0x7fffeffc && address < 0x00400000){
-    return stack[address - 0x7fffeffc] = byteToStore;
+    return stack[address - 0x7fffeffc] = wordToStore;
   }
 
-  if(address>0x00400000 && address < 0x10010000){
-   return text[address - 0x00400000] = byteToStore;
+  if(address>0x00400000 && address < 0x10010000){ 
+   return text[address - 0x00400000] = wordToStore;
+
   }
 
   if(address > 0x10010000){
-    return staticData[address - 0x10010000] = byteToStore;
+    return staticData[address - 0x10010000] = wordToStore;
 	    }
 }
 
@@ -333,7 +380,7 @@ void mfhi (int a){
 void mflo (int a){
 	registers[a] = loreg;
 }
-=======
+
 
 	  void syscall(){
 	    int v0 = registers[2]; // register 2 is v0
@@ -345,10 +392,6 @@ void mflo (int a){
 
 	      printf(%s,registers[4]); //registers 4-7 are a0-a3
 
-=======
-
-
-=======
 	    case 5:
 	      scanf("%i", &v0);
 
