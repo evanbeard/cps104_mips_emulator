@@ -1,14 +1,15 @@
 #include "emulator.h"
 #include <vector>
+#include <sstream>
 #include <iostream>
 #include <string>
 #include <map>
 
 using namespace std;
 
-int text[2*1024];
-int staticData[4*1024];
-int stack[2*1024];
+int text[2*1024 / 4];
+int staticData[4*1024 / 4];
+int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
@@ -292,6 +293,7 @@ void sw(int a, int b, int c){
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
+	
 	if (argv[1]=0) { //if user passes run to completion mode
 
 
@@ -302,7 +304,7 @@ int main(int argc, char* argv[]) {
 			string input;
 			cin >> input;
 
-			//      p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
+			//  p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
 			//	p all print the contents of all registers, including the PC, HI, & LO in hex
 			//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
 			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
@@ -330,4 +332,6 @@ int main(int argc, char* argv[]) {
 		}
 
 	}
+	
+    myfile.close();
 }
