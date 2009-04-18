@@ -125,7 +125,25 @@ void lw(int a, int b, int c){
     getAddress[b+registers[c]+3] << 24;
 }
 
-<<<<<<< HEAD:emulator.cc
+
+
+void sb(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+}
+
+
+void sw(int a, int b, int c){
+  storeAddress(b+registers[c], registers[a] & OxFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
+}
+
+
+lui(int a, int b){
+  registers[a] = c << 16;
+}
+
 void add (int dreg, int a, int b){
 	registers[dreg] = registers[a] + registers[b];
 }
@@ -219,29 +237,39 @@ void bgez (int a, int c){
 	if(registers[a] >= 0)
 		pc += 4 + 4*c;
 }
-=======
-void add(int a, int b, int c){
 
-  registers[a] = registers[b] + registers[c];
+
+
+	  void syscall(){
+	    int v0 = registers[2]; // register 2 is v0
+	    switch(v0){
+	    case 1:
+	      printf(%i,registers[4]); //registers 4-7 are a0-a3
+
+	    case 4:
+
+	      printf(%s,registers[4]); //registers 4-7 are a0-a3
+
+
+	    case 5:
+	      scanf("%i", &v0);
+
+	    case 8:
+	      int ao = registers[4];
+	      int a1 = registers[5]; //NOT CORRECT yet
+	      scanf("%"a0"s", &v0);
+
+	    case 10:
+	      exit();
+
+
+
+	    }
+	    
 }
 
 
-
-void sb(int a, int b, int c){
-  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
-}
-
-
-void sw(int a, int b, int c){
-  storeAddress(b+registers[c], registers[a] & OxFF);
-  storeAddress(b+registers[c] + 1, (registers[a] & OxFF00) >> 8);
-  storeAddress(b+registers[c] + 2, (registers[a] & OxFF0000) >> 16);
-  storeAddress(b+registers[c] + 3, (registers[a] & OxFF000000) >> 24);
-}
-
-void lui(int 
-
-
+/*
 LB load byte
 LBU load byte unsigned
 LW load word
@@ -279,7 +307,7 @@ JR jump register
 MFHI move from HI register
 MFLO move from LO register
 SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
->>>>>>> bc7d7dfdbb9145da697043f961fe6bc9e5d65759:emulator.cc
+*/
 
 
 
