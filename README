@@ -1,0 +1,5 @@
+Design:
+
+For the MIPS Emulator, we used C++ to simulate the MIPS instruction set.  Arrays were used to represent the text, static data, stack, and registers.  Ints were used to represent the program counter, stack pointer, HI register, and LO register.  Also, a mode int, as defined by the user, determines whether the program will run step-by-step or all the way.  From each instruction, the opcode is determined through cases, and then, the appropriate command is executed.  A seperate method was implemented for each command in MIPS.
+
+The program begins by reading in a file, and it will parse it one line at a time to execute each instruction.  How fast it runs depends on the user's input(s).  Upon parsing, the opcode value, rs, rt, rd, shift, and function are masked out of the number.  Using these values, it reads the instruction line and determines the command by testing each opcode case.  

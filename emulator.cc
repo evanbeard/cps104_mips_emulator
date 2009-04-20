@@ -16,7 +16,7 @@ int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
-int pc;
+int pc;  //Program counter
 int hireg;
 int loreg;
 
@@ -66,9 +66,9 @@ void lw(int a, int b, int c) {
 
   registers[a] =
     (getAddress(b+registers[c]))
- + 
+ +
     (getAddress(b+registers[c]+1) << 8)
-    + (getAddress(b+registers[c]+2) << 16) 
+    + (getAddress(b+registers[c]+2) << 16)
 + (getAddress(b+registers[c]+3) << 24);
 }
 
@@ -86,39 +86,46 @@ void sw(int a, int b, int c) {
 void lui(int a, int b) {
 	registers[a] = b << 16;
 }
-
+//ADD rd, ra, rb
 void add(int dreg, int a, int b) {
 	registers[dreg] = registers[a] + registers[b];
 }
 
+//ADD rd, ra, c
 void addi(int dreg, int a, int c) {
 	registers[dreg] = registers[a] + c;
 }
 
+//convert regular ints to unsigned ints
+//ADDU rd, ra, rb
 void addu(int dreg, int a, int b) {
-
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
 	registers[dreg] = unsA + unsB;
 }
 
+//ADDIU rd, ra, c
 void addiu(int dreg, int a, int c) {
 	unsigned int unsA = registers[a];
 	unsigned int unsC = c;
 	registers[dreg] = unsA + unsC;
 }
 
+//AND rd, ra, rb
 void andfunc(int dreg, int a, int b) {
 	registers[dreg] = registers[a] & registers[b];
 }
 
+//MULT ra, rb
+//Product goes into HI and LO registers
 void mult(int a, int b) {
 	long product = registers[a] * registers[b];
 	hireg = product >> 32;
 	loreg = (product << 32) >> 32;
 }
 
-void multu(int a, int b) {
+//MULTU ra, rb
+void multu (int a, int b){
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
 	long product = unsA * unsB;
@@ -126,23 +133,28 @@ void multu(int a, int b) {
 	loreg = (product << 32) >> 32;
 }
 
+//OR rd, ra , rb
 void orfunc(int dreg, int a, int b) {
 	registers[dreg] = registers[a] | registers[b];
 }
 
+//ORI rd, ra, c
 void ori(int dreg, int a, int c) {
 	registers[dreg] = registers[a] | c;
 }
 
+//XOR rd, r1, r2
 void xorfunc(int dreg, int reg1, int reg2) {
 	registers[dreg] = (registers[reg1]&(!registers[reg2])) | (registers[reg2]
 			&(!registers[reg1]));
 }
 
+//SLL rd, ra, c
 void sll(int dreg, int a, int c) {
 	registers[dreg] = registers[a] << c;
 }
 
+//SRA rd, ra, c
 void sra(int dreg, int a, int c) {
 	int i;
 	int sum = 0;
@@ -152,7 +164,8 @@ void sra(int dreg, int a, int c) {
 	registers[dreg] = (registers[a] >> c) + sum;
 }
 
-void srl(int dreg, int a, int c) {
+//SRL rd, ra, c
+void srl (int dreg, int a, int c){
 	registers[dreg] = registers[a] >> c;
 }
 
@@ -160,6 +173,7 @@ void sub(int dreg, int a, int b) {
 	registers[dreg] = registers[a] - registers[b];
 }
 
+//SUBU rd, ra, rb
 void subu(int dreg, int a, int b) {
 	unsigned int unsA = registers[a];
 	unsigned int unsB = registers[b];
@@ -264,7 +278,7 @@ void syscall() {
 	case 8:
 		char str [80];
 //		int a0 = registers[4];
-//		int a1 = registers[5]; 
+//		int a1 = registers[5];
 		scanf("%s", str);
 		registers[4] = (int) &str[0];
 		registers[5] = sizeof(str)/sizeof(char) + 1;
@@ -315,6 +329,7 @@ void syscall() {
  SYSCALL system call-like facilities that SPIM programs can use (implement syscall code 1,4,5,8,10)
  */
 
+//Takes an instruction, decodes it, and executes appropriate command
 void parseLine(int instruction) {
 
 	// increment program pointer
@@ -465,6 +480,7 @@ void parseLine(int instruction) {
 	}
 }
 
+//Takes the source file and reads each line into an array
 void readFile(string filename) {
 	string line;
 	ifstream myfile(filename.c_str());
@@ -486,7 +502,7 @@ void readFile(string filename) {
 		if (entireFile[j] == "DATA SEGMENT\n") {
 			break;
 		}
-		
+
 
 //		int current =  entireFile[j];
 		text[j]=atoi((const char *)&entireFile[j]);
