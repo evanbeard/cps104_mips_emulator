@@ -488,8 +488,8 @@ void readFile(string filename) {
 		}
 		
 
-		int* current =  &entireFile[j];
-		text[j]=atoi(current);
+//		int current =  entireFile[j];
+		text[j]=atoi((const char *)&entireFile[j]);
 	}
 
 
@@ -499,17 +499,19 @@ void readFile(string filename) {
 		string::size_type pos;
 		pos=first.find(' ', 0);
 		string second=first.substr(pos, 0);
-		string first=first.substr(0, pos);
-		int firstInt = atoi(first);
-		int secondInt = atoi(second);
-		storeAddress(first, second);
+		string firstStr=first.substr(0, pos);
+		int firstInt = atoi((const char *)&firstStr);
+		int secondInt = atoi((const char *)&second);
+		storeAddress(firstInt, secondInt);
 	}
 
 }
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
-
+    string fileName = "./sum.s";
+   // cin >> fileName;
+    readFile(fileName);
 	if (argv[1] == 0) { //if user passes run to completion mode
 
 
@@ -531,22 +533,22 @@ int main(int argc, char* argv[]) {
 					printf("%x", &registers[i]);
 				}
 			} else if (input.at(0) == 'p') {
-				int regnum = atoi(input.substr(2, input.size()-2));
+				int regnum = atoi((const char *)&(input.substr(2, input.size()-2)));
 				printf("%x", &registers[regnum]);
 			}
 
 			if (input =="d addr") {
-				int addr = atoi(input.substr(2, input.size()-2));
-				printf("%x", &registers[regnum]);
+				int addr = atoi((const char *)&(input.substr(2, input.size()-2)));
+//				printf("%x", &registers[regnum]);
 			}
 
 			if (input == "s") {
-				int num = atoi(input.substr(2, input.size()-2));
+				int num = atoi((const char *)&(input.substr(2, input.size()-2)));
 				int i;
 				int instr;
 				for (int i = 0; i < num; i++) {
 					instr = text[pc];
-					cout << "Instruction: " << instr << end1;
+					cout << "Instruction: " << instr << endl;
 					parseLine(instr);
 				}
 
@@ -554,4 +556,6 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
+    printf("ends");
+	return 0;
 }
