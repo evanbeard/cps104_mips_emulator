@@ -10,9 +10,9 @@
 
 using namespace std;
 
-int text[2*1024 / 4];
-int staticData[4*1024 / 4];
-int stack[2*1024 / 4];
+unsigned int text[2*1024 / 4];
+unsigned int staticData[4*1024 / 4];
+unsigned int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
@@ -484,40 +484,48 @@ void parseLine(int instruction) {
 void readFile(string filename) {
 	string line;
 	ifstream myfile(filename.c_str());
-	vector<string> entireFile;
+	vector<string> entireFile (1000000);
 	if (myfile.is_open()) {
 
 		int i=0;
 		while (!myfile.eof() ) {
 			getline(myfile, line);
+			cout << "line is " << line << endl;
 			entireFile[i]=line;
 			i++;
 		}
 		myfile.close();
 	}
-
-	int j;
+	
+	int textSize;
+	unsigned int j;
 	for (j=0; j<entireFile.size(); j++) {
 
-		if (entireFile[j] == "DATA SEGMENT\n") {
+		if (entireFile[j] == "DATA SEGMENT") {
+			textSize = j;
+			cout << "found data segment at " << textSize << endl;
 			break;
 		}
 
-
-//		int current =  entireFile[j];
-		text[j]=atoi((const char *)&entireFile[j]);
+		cout << "string is: " << entireFile[j] << endl;
+		sscanf (entireFile[j].c_str(), "%x", &text[j]);
+		cout << "text is: " << hex << text[j] << endl;
 	}
 
-
-	int k;
-	for (k = 0; k<entireFile.size() - j; k++) {
+	cout << "out of first loop" << endl;
+	unsigned int k;
+	// stop condition was wrong, need to be size - size of data segment
+	for (k = textSize + 1; k < entireFile.size(); k++) {
 		string first =entireFile[1+j+k];
-		string::size_type pos;
-		pos=first.find(' ', 0);
-		string second=first.substr(pos, 0);
-		string firstStr=first.substr(0, pos);
-		int firstInt = atoi((const char *)&firstStr);
-		int secondInt = atoi((const char *)&second);
+//		string::size_type pos;
+//		pos=first.find(' ', 0);
+		string firstStr=first.substr(0, 10);
+		string secondStr=first.substr(11, 20);
+		int firstInt;
+		int secondInt;
+		sscanf (firstStr.c_str(), "%x", &firstInt);
+		sscanf (secondStr.c_str(), "%x", &secondInt);
+		cout << "string is: " << entireFile[k] << endl;
 		storeAddress(firstInt, secondInt);
 	}
 
@@ -525,7 +533,8 @@ void readFile(string filename) {
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
-    string fileName = "./sum.s";
+    string fileName = "./sum.o";
+	cout << fileName << endl;
    // cin >> fileName;
     readFile(fileName);
 	if (argv[1] == 0) { //if user passes run to completion mode
@@ -572,6 +581,6 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
-    printf("ends");
+    cout << "end of program" << endl;
 	return 0;
 }
