@@ -516,16 +516,19 @@ void readFile(string filename) {
 	unsigned int k;
 	// stop condition was wrong, need to be size - size of data segment
 	for (k = textSize + 1; k < entireFile.size(); k++) {
-		string first =entireFile[1+j+k];
+		string first =entireFile[k];
+		if (first.empty())
+			break;
 //		string::size_type pos;
 //		pos=first.find(' ', 0);
+		cout << "gonna split string: " << first << endl;
 		string firstStr=first.substr(0, 10);
-		string secondStr=first.substr(11, 20);
+		string secondStr=first.substr(11, 10);
+		cout << "split strings correctly" << endl;
 		int firstInt;
 		int secondInt;
 		sscanf (firstStr.c_str(), "%x", &firstInt);
 		sscanf (secondStr.c_str(), "%x", &secondInt);
-		cout << "string is: " << entireFile[k] << endl;
 		storeAddress(firstInt, secondInt);
 	}
 
