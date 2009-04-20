@@ -267,13 +267,13 @@ void syscall() {
 	int v0 = registers[2]; // register 2 is v0
 	switch (v0) {
 	case 1:
-		printf("%i", registers[4]); //registers 4-7 are a0-a3
+		printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-	  printf("%s", registers[4]); //registers 4-7 are a0-a3
+	    printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
-		scanf("%i", &v0);
+		scanf("%d", &v0);
 		break;
 	case 8:
 		char str [80];
@@ -402,7 +402,7 @@ void parseLine(int instruction) {
 			subu(rd, rs, rt);
 			break;
 		case 0xC:
-			syscall();
+			syscall(); // program breaks here
 			break;
 		case 0x26:
 			xorfunc(rd, rs, rt);
@@ -541,10 +541,15 @@ int main(int argc, char* argv[]) {
    // cin >> fileName;
     readFile(fileName);
 	if (argv[1] == 0) { //if user passes run to completion mode
-
-
+		cout << "run to completion mode" << endl;
+		// need to implement running of program with parseLine
+		int i;
+		for (i = 0; i < (2*1024 / 4); i++) {
+			parseLine(text[i]);
+		}
+		
 	} else { //single step through program
-
+		cout << "single step mode" << endl;
 
 		while (1) {
 			string input;
