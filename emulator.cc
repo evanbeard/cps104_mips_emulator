@@ -153,10 +153,12 @@ void sll(int dreg, int a, int c) {
 
 //SRA rd, ra, c
 void sra(int dreg, int a, int c) {
-	int i;
 	int sum = 0;
-	for (i = 1; i < c; i++) {
-		sum += 2^(31-i);
+	if(a < 0){
+		int i;
+		for (i = 0; i < c; i++) {
+			sum += -1*(2^(31-i));
+		}
 	}
 	registers[dreg] = (registers[a] >> c) + sum;
 }
@@ -493,7 +495,7 @@ void readFile(string filename) {
 		}
 		myfile.close();
 	}
-	
+
 	int textSize;
 	unsigned int j;
 	for (j=0; j<entireFile.size(); j++) {
@@ -551,9 +553,9 @@ int main(int argc, char* argv[]) {
 		for (i = 0; i < (2*1024 / 4); i++) {
 			parseLine(text[i]);
 		}
-		
+
 		while ()
-		
+
 	} else if (mode == 1) { //single step through program
 		cout << "single step mode" << endl;
 
