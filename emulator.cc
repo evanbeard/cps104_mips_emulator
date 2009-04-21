@@ -146,22 +146,18 @@ void xorfunc(int dreg, int reg1, int reg2) {
 }
 
 //SLL rd, ra, c
-void sll(int dreg, int a, int c) {
+void sll(int dreg, int a, unsigned int c) {
 	registers[dreg] = registers[a] << c;
 }
 
 //SRA rd, ra, c
 void sra(int dreg, int a, int c) {
-	int i;
-	int sum = 0;
-	for (i = 1; i < c; i++) {
-		sum += 2^(31-i);
-	}
-	registers[dreg] = (registers[a] >> c) + sum;
+  signed tmp = registers[a];
+	registers[dreg] = (tmp >> c);
 }
 
 //SRL rd, ra, c
-void srl (int dreg, int a, int c){
+void srl (int dreg, int a, unsigned int c){
 	registers[dreg] = registers[a] >> c;
 }
 
