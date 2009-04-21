@@ -536,11 +536,13 @@ void readFile(string filename) {
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
-    string fileName = "./sum.o";
-	cout << fileName << endl;
-   // cin >> fileName;
+//    string fileName = "./sum.o";
+//	cout << fileName << endl;
+	string fileName;
+	cout << "Enter name of instruction file: ";
+    cin >> fileName;
     readFile(fileName);
-	if (argv[1] == 0) { //if user passes run to completion mode
+	if (argv[1] != 0) { //if user passes run to completion mode
 		cout << "run to completion mode" << endl;
 		// need to implement running of program with parseLine
 		int i;
@@ -554,6 +556,7 @@ int main(int argc, char* argv[]) {
 		while (1) {
 			string input;
 			cin >> input;
+			cout << "input: " << input << endl;
 
 			//  p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
 			//	p all print the contents of all registers, including the PC, HI, & LO in hex
@@ -563,25 +566,29 @@ int main(int argc, char* argv[]) {
 
 			if (input == "p all") {
 				for (int i=0; i<32; i++) {
-					printf("%x", &registers[i]);
+					cout << hex << registers[i] << endl;
 				}
 			} else if (input.at(0) == 'p') {
-				int regnum = atoi((const char *)&(input.substr(2, input.size()-2)));
-				printf("%x", &registers[regnum]);
+				int registerNum;
+				// these don't work for some reason, maybe going beyond the end of the string
+				sscanf(input.substr(2, input.size()-2).c_str(), "%d", &registerNum);
+				cout << hex << registers[registerNum] << endl;
 			}
 
-			if (input =="d addr") {
-				int addr = atoi((const char *)&(input.substr(2, input.size()-2)));
-//				printf("%x", &registers[regnum]);
+			if (input.at(0) == 'd') {
+				int addr;
+				sscanf (input.substr(2).c_str(), "%x", &addr);
+				cout << hex << getAddress(addr) << endl;
 			}
 
-			if (input == "s") {
-				int num = atoi((const char *)&(input.substr(2, input.size()-2)));
+			if (input.at(0) == 's') {
+				int numSkip;
+				sscanf (input.substr(2, input.size()-2).c_str(), "%d", &numSkip);
 				int i;
 				int instr;
-				for (int i = 0; i < num; i++) {
+				for (i = 0; i < numSkip; i++) {
 					instr = text[pc];
-					cout << "Instruction: " << instr << endl;
+					cout << "Instruction: " << hex << instr << endl;
 					parseLine(instr);
 				}
 
