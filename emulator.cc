@@ -505,7 +505,7 @@ void readFile(string filename) {
 
 
 		int* current =  &entireFile[j];
-		text[j]=atoi(current);
+		text[j]=atoi(&current);
 	}
 
 
