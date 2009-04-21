@@ -16,7 +16,6 @@ unsigned int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int registers[32];
 // r29 is the stack pointer
-int regsiters[29] = 0x7fffeffc;
 int pc;  //Program counter
 int hireg;
 int loreg;
@@ -50,34 +49,26 @@ int storeAddress(int address, int wordToStore) {
 }
 
 void lb(int a, int b, int c) {
-
-	registers[a] = getAddress(b+registers[c]);
+	registers[a] = getAddress(b+registers[c]) & 0xFF;
 }
 
 void lbu(int a, unsigned int b, int c) {
-
-	registers[a] = getAddress(b+registers[c]);
+	registers[a] = getAddress(b+registers[c]) & 0xFF;
 }
 
 void lw(int a, int b, int c) {
-
-  registers[a] =
-    (getAddress(b+registers[c]))
- +
-    (getAddress(b+registers[c]+1) << 8)
-    + (getAddress(b+registers[c]+2) << 16)
-+ (getAddress(b+registers[c]+3) << 24);
+  registers[a] = getAddress(b+registers[c]);
 }
 
 void sb(int a, int b, int c) {
-	storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
+	int original = getAddress(b + registers[c]);
+	int originalMasked = original && 0xFFFFFF00;
+	int newValue = originalMasked || (registers[a] & 0xFF);
+	storeAddress(b+registers[c], newValue); //0xFF = 8 one's in a row to get first byte
 }
 
 void sw(int a, int b, int c) {
-	storeAddress(b+registers[c], registers[a] & 0xFF);
-	storeAddress(b+registers[c] + 1, (registers[a] & 0xFF00) >> 8);
-	storeAddress(b+registers[c] + 2, (registers[a] & 0xFF0000) >> 16);
-	storeAddress(b+registers[c] + 3, (registers[a] & 0xFF000000) >> 24);
+	storeAddress(b+registers[c], registers[a]);
 }
 
 void lui(int a, int b) {
@@ -158,7 +149,7 @@ void sra(int dreg, int a, int c) {
 	for (i = 1; i < c; i++) {
 		sum += 2^(31-i);
 	}
-	registers[dreg] = (registers[a] >> c) + sum;
+	registers[dreg] = (registers[a] >> c) + (sum * (registers[2] >> 31));
 }
 
 //SRL rd, ra, c
@@ -211,45 +202,45 @@ void sltiu(int dreg, int a, int c) {
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += 1 + 1*c;
+		pc += c / 4;
 }
 
 void jump(int c) {
-	pc = c;
+	pc = c/4;
 }
 
 void jal(int c) {
-	pc = c;
+	pc = c/4;
 	registers[31] = pc + 1;
 }
 
 void jr(int a) {
-	pc = registers[a];
+	pc = registers[a] / 4;
 }
 
 void mfhi(int a) {
@@ -328,9 +319,6 @@ void syscall() {
 
 //Takes an instruction, decodes it, and executes appropriate command
 void parseLine(int instruction) {
-
-	// increment program pointer
-	pc += 1;
 
 	//parse registry code
 	int opcode = (instruction & 0xFC000000) >> 26;
@@ -475,6 +463,9 @@ void parseLine(int instruction) {
 		cout << "not a valid instruction" << endl;
 		break;
 	}
+	
+	// increment program pointer
+	pc += 1;
 }
 
 //Takes the source file and reads each line into an array
@@ -532,6 +523,9 @@ void readFile(string filename) {
 }
 
 int main(int argc, char* argv[]) {
+	registers[29] = 0x7fffeffc;
+	pc = 0;
+	
 	cout << "argc = " << argc << endl;
 //    string fileName = "./sum.o";
 //	cout << fileName << endl;
@@ -547,12 +541,16 @@ int main(int argc, char* argv[]) {
 	if (mode == 0) { //if user passes run to completion mode
 		cout << "run to completion mode" << endl;
 		// need to implement running of program with parseLine
-		int i;
-		for (i = 0; i < (2*1024 / 4); i++) {
-			parseLine(text[i]);
+//		int i;
+//		for (i = 0; i < (2*1024 / 4); i++) {
+//			parseLine(text[i]);
+//		}
+		// start reading text from text[0], then read text[pc]
+		while (text[pc] != 0) {
+			cout << "pc: " << pc << endl;
+			cout << "parseline: " << text[pc] << endl;
+			parseLine(text[pc]);
 		}
-		
-		while ()
 		
 	} else if (mode == 1) { //single step through program
 		cout << "single step mode" << endl;
