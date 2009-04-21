@@ -539,7 +539,7 @@ int main(int argc, char* argv[]) {
     //mode 1 = step through program
     readFile(fileName);
 	if (mode == 0) { //if user passes run to completion mode
-		cout << "run to completion mode" << endl;
+		cout << "run to completion mode------" << endl;
 		// need to implement running of program with parseLine
 //		int i;
 //		for (i = 0; i < (2*1024 / 4); i++) {
@@ -553,28 +553,27 @@ int main(int argc, char* argv[]) {
 		}
 		
 	} else if (mode == 1) { //single step through program
-		cout << "single step mode" << endl;
+		cout << "single step mode------" << endl;
 
 		while (1) {
 			string input;
 			cin >> input;
-			cout << "input: " << input << endl;
 
-			//  p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
-			//	p all print the contents of all registers, including the PC, HI, & LO in hex
-			//	d addr print the contents of memory location addr in hex, assume addr is a word address in hex.
-			//	s n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
+			//  p_reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
+			//	p_all print the contents of all registers, including the PC, HI, & LO in hex
+			//	d_addr print the contents of memory location addr in hex, assume addr is a word address in hex.
+			//	s_n execute the next n instructions and stop (should print each instruction executed), then wait for the user to input another command
 
 
-			if (input == "p all") {
+			if (input.substr(0, input.length()) == "p_all") {
 				for (int i=0; i<32; i++) {
-					cout << hex << registers[i] << endl;
+					cout << "register " << dec << i << ": "<< hex << registers[i] << endl;
 				}
 			} else if (input.at(0) == 'p') {
 				int registerNum;
 				// these don't work for some reason, maybe going beyond the end of the string
 				sscanf(input.substr(2, input.size()-2).c_str(), "%d", &registerNum);
-				cout << hex << registers[registerNum] << endl;
+				cout << "register " << dec << registerNum << ": " << hex << registers[registerNum] << endl;
 			}
 
 			if (input.at(0) == 'd') {
