@@ -202,45 +202,45 @@ void sltiu(int dreg, int a, int c) {
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += c / 4;
+		pc += c;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += c / 4;
+		pc += c;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += c / 4;
+		pc += c;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += c / 4;
+		pc += c;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += c / 4;
+		pc += c;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += c / 4;
+		pc += c;
 }
 
 void jump(int c) {
-	pc = c/4;
+	pc = c;
 }
 
 void jal(int c) {
-	pc = c/4;
 	registers[31] = pc + 1;
+	pc = c;
 }
 
 void jr(int a) {
-	pc = registers[a] / 4;
+	pc = registers[a];
 }
 
 void mfhi(int a) {
@@ -319,6 +319,8 @@ void syscall() {
 
 //Takes an instruction, decodes it, and executes appropriate command
 void parseLine(int instruction) {
+	// increment program pointer
+	pc += 1;
 
 	//parse registry code
 	int opcode = (instruction & 0xFC000000) >> 26;
@@ -463,9 +465,6 @@ void parseLine(int instruction) {
 		cout << "not a valid instruction" << endl;
 		break;
 	}
-	
-	// increment program pointer
-	pc += 1;
 }
 
 //Takes the source file and reads each line into an array
