@@ -10,9 +10,9 @@
 
 using namespace std;
 
-unsigned int text[2*1024 / 4];
-unsigned int staticData[4*1024 / 4];
-unsigned int stack[2*1024 / 4];
+unsigned int text[2*1024 / 4]; //word addressable
+unsigned int staticData[4*1024 / 4]; //byte addressable
+unsigned int stack[2*1024 / 4]; //byte addressable
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int registers[32];
 // r29 is the stack pointer
@@ -20,27 +20,30 @@ int pc;  //Program counter
 int hireg;
 int loreg;
 
+//takes a byte-address in order to access the byte-addressable stack and static-data segments of memory
 int getAddress(int address) {
 	if (address>0x7fffeffc && address < 0x00400000) {
 		return stack[address - 0x7fffeffc];
 	}
 
-	if (address>0x00400000 && address < 0x10010000) {
-		return text[address - 0x00400000];
-	}
+//  	if (address>0x00400000 && address < 0x10010000) {
+//  		return text[address - 0x00400000];
+// 	}
+
 
 	if (address > 0x10010000) {
 		return staticData[address - 0x10010000];
 	}
 }
 
+//takes a byte-address in order to access the byte-addressable stack and static-data segments of memory
 int storeAddress(int address, int wordToStore) {
 	if (address>0x7fffeffc && address < 0x00400000) {
 		return stack[address - 0x7fffeffc] = wordToStore;
 	}
 
-	if (address>0x00400000 && address < 0x10010000) {
-		return text[address - 0x00400000] = wordToStore;
+// 	if (address>0x00400000 && address < 0x10010000) {
+// 		return text[address - 0x00400000] = wordToStore;
 
 	}
 	if (address > 0x10010000) {
@@ -49,26 +52,34 @@ int storeAddress(int address, int wordToStore) {
 }
 
 void lb(int a, int b, int c) {
-	registers[a] = getAddress(b+registers[c]) & 0xFF;
+	registers[a] = getAddress(b+registers[c]);
 }
 
 void lbu(int a, unsigned int b, int c) {
-	registers[a] = getAddress(b+registers[c]) & 0xFF;
+	registers[a] = getAddress(b+registers[c]);
 }
 
 void lw(int a, int b, int c) {
   registers[a] = getAddress(b+registers[c]);
+ 
+  registers[a] =
+    (getAddress(b+registers[c]))
+ + 
+    (getAddress(b+registers[c]+1) << 8)
+    + (getAddress(b+registers[c]+2) << 16) 
++ (getAddress(b+registers[c]+3) << 24);
 }
 
 void sb(int a, int b, int c) {
-	int original = getAddress(b + registers[c]);
-	int originalMasked = original && 0xFFFFFF00;
-	int newValue = originalMasked || (registers[a] & 0xFF);
-	storeAddress(b+registers[c], newValue); //0xFF = 8 one's in a row to get first byte
+  storeAddress(b+registers[c], registers[a] & 0xFF); //0xFF = 8 one's in a row to get first byte
 }
 
 void sw(int a, int b, int c) {
 	storeAddress(b+registers[c], registers[a]);
+  storeAddress(b+registers[c], registers[a] & 0xFF);
+  storeAddress(b+registers[c] + 1, (registers[a] & 0xFF00) >> 8);
+  storeAddress(b+registers[c] + 2, (registers[a] & 0xFF0000) >> 16);
+  storeAddress(b+registers[c] + 3, (registers[a] & 0xFF000000) >> 24);
 }
 
 void lui(int a, int b) {
@@ -138,12 +149,13 @@ void xorfunc(int dreg, int reg1, int reg2) {
 }
 
 //SLL rd, ra, c
-void sll(int dreg, int a, int c) {
+void sll(int dreg, int a, unsigned int c) {
 	registers[dreg] = registers[a] << c;
 }
 
 //SRA rd, ra, c
 void sra(int dreg, int a, int c) {
+
 	int sum = 0;
 	if(a < 0){
 		int i;
@@ -155,7 +167,7 @@ void sra(int dreg, int a, int c) {
 }
 
 //SRL rd, ra, c
-void srl (int dreg, int a, int c){
+void srl (int dreg, int a, unsigned int c){
 	registers[dreg] = registers[a] >> c;
 }
 
@@ -260,7 +272,7 @@ void syscall() {
 		printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-	    printf("%d", registers[4]); //registers 4-7 are a0-a3
+	  printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
 		scanf("%d", &v0);
@@ -496,6 +508,7 @@ void readFile(string filename) {
 			cout << "found data segment at " << textSize << endl;
 			break;
 		}
+
 
 		cout << "string is: " << entireFile[j] << endl;
 		sscanf (entireFile[j].c_str(), "%x", &text[j]);
