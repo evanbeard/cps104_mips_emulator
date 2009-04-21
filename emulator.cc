@@ -14,8 +14,9 @@ unsigned int text[2*1024 / 4];
 unsigned int staticData[4*1024 / 4];
 unsigned int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
-int stack_pointer = 0x7fffefff;
 int registers[32];
+// r29 is the stack pointer
+int regsiters[29] = 0x7fffeffc;
 int pc;  //Program counter
 int hireg;
 int loreg;
@@ -329,7 +330,7 @@ void syscall() {
 void parseLine(int instruction) {
 
 	// increment program pointer
-	pc += 4;
+	pc += 1;
 
 	//parse registry code
 	int opcode = (instruction & 0xFC000000) >> 26;
@@ -551,6 +552,8 @@ int main(int argc, char* argv[]) {
 			parseLine(text[i]);
 		}
 		
+		while ()
+		
 	} else if (mode == 1) { //single step through program
 		cout << "single step mode" << endl;
 
@@ -596,6 +599,9 @@ int main(int argc, char* argv[]) {
 			}
 
 		}
+	}
+	for (int i=0; i<32; i++) {
+		cout << hex << registers[i] << endl;
 	}
     cout << "end of program" << endl;
 	return 0;
