@@ -45,14 +45,13 @@ int storeAddress(int address, int wordToStore) {
 	// 	if (address>0x00400000 && address < 0x10010000) {
 	// 		return text[address - 0x00400000] = wordToStore;
 
-}
-if (address > 0x10010000) {
-	return staticData[address - 0x10010000] = wordToStore;
-}
+	if (address > 0x10010000) {
+		return staticData[address - 0x10010000] = wordToStore;
+	}
 }
 
 void lb(int a, int b, int c) {
-registers[a] = getAddress(b+registers[c]);
+	registers[a] = getAddress(b+registers[c]);
 }
 
 void lbu(int a, unsigned int b, int c) {
@@ -210,45 +209,45 @@ void sltiu(int dreg, int a, int c) {
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += c;
+		pc += c*4;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += c;
+		pc += c*4;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += c;
+		pc += c*4;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += c;
+		pc += c*4;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += c;
+		pc += c*4;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += c;
+		pc += c*4;
 }
 
 void jump(int c) {
-	pc = c;
+	pc = (pc & 0xF0000000) + c*4;
 }
 
 void jal(int c) {
-	registers[31] = pc + 1;
-	pc = c;
+	registers[31] = pc + 4;
+	pc = (pc & 0xF0000000) + c*4;;
 }
 
 void jr(int a) {
-	pc = registers[a];
+	pc = (pc & 0xF0000000) + registers[a]*4;
 }
 
 void mfhi(int a) {
