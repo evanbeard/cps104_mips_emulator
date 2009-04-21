@@ -10,9 +10,9 @@
 
 using namespace std;
 
-int text[2*1024 / 4];
-int staticData[4*1024 / 4];
-int stack[2*1024 / 4];
+unsigned int text[2*1024 / 4];
+unsigned int staticData[4*1024 / 4];
+unsigned int stack[2*1024 / 4];
 //Be sure to consider that from the program's perspective, the text segment begins at address 0x00400000 and the static data segment begins at address 0x10010000
 int stack_pointer = 0x7fffefff;
 int registers[32];
@@ -267,13 +267,13 @@ void syscall() {
 	int v0 = registers[2]; // register 2 is v0
 	switch (v0) {
 	case 1:
-		printf("%i", registers[4]); //registers 4-7 are a0-a3
+		printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 4:
-	  printf("%s", registers[4]); //registers 4-7 are a0-a3
+	    printf("%d", registers[4]); //registers 4-7 are a0-a3
 		break;
 	case 5:
-		scanf("%i", &v0);
+		scanf("%d", &v0);
 		break;
 	case 8:
 		char str [80];
@@ -402,7 +402,7 @@ void parseLine(int instruction) {
 			subu(rd, rs, rt);
 			break;
 		case 0xC:
-			syscall();
+			syscall(); // program breaks here
 			break;
 		case 0x26:
 			xorfunc(rd, rs, rt);
@@ -484,57 +484,80 @@ void parseLine(int instruction) {
 void readFile(string filename) {
 	string line;
 	ifstream myfile(filename.c_str());
-	vector<string> entireFile;
+	vector<string> entireFile (1000000);
 	if (myfile.is_open()) {
 
 		int i=0;
 		while (!myfile.eof() ) {
 			getline(myfile, line);
+			cout << "line is " << line << endl;
 			entireFile[i]=line;
 			i++;
 		}
 		myfile.close();
 	}
-
-	int j;
+	
+	int textSize;
+	unsigned int j;
 	for (j=0; j<entireFile.size(); j++) {
 
-		if (entireFile[j] == "DATA SEGMENT\n") {
+		if (entireFile[j] == "DATA SEGMENT") {
+			textSize = j;
+			cout << "found data segment at " << textSize << endl;
 			break;
 		}
 
 
-		int* current =  &entireFile[j];
-		text[j]=atoi(&current);
+		cout << "string is: " << entireFile[j] << endl;
+		sscanf (entireFile[j].c_str(), "%x", &text[j]);
+		cout << "text is: " << hex << text[j] << endl;
 	}
 
-
-	int k;
-	for (k = 0; k<entireFile.size() - j; k++) {
-		string first =entireFile[1+j+k];
-		string::size_type pos;
-		pos=first.find(' ', 0);
-		string second=first.substr(pos, 0);
-		string first=first.substr(0, pos);
-		int firstInt = atoi(first);
-		int secondInt = atoi(second);
-		storeAddress(first, second);
+	cout << "out of first loop" << endl;
+	unsigned int k;
+	// stop condition was wrong, need to be size - size of data segment
+	for (k = textSize + 1; k < entireFile.size(); k++) {
+		string first =entireFile[k];
+		if (first.empty())
+			break;
+//		string::size_type pos;
+//		pos=first.find(' ', 0);
+		cout << "gonna split string: " << first << endl;
+		string firstStr=first.substr(0, 10);
+		string secondStr=first.substr(11, 10);
+		cout << "split strings correctly" << endl;
+		int firstInt;
+		int secondInt;
+		sscanf (firstStr.c_str(), "%x", &firstInt);
+		sscanf (secondStr.c_str(), "%x", &secondInt);
+		storeAddress(firstInt, secondInt);
 	}
 
 }
 
 int main(int argc, char* argv[]) {
 	cout << "argc = " << argc << endl;
-
-	if (argv[1] == 0) { //if user passes run to completion mode
-
-
+//    string fileName = "./sum.o";
+//	cout << fileName << endl;
+	string fileName;
+	cout << "Enter name of instruction file: ";
+    cin >> fileName;
+    readFile(fileName);
+	if (argv[1] != 0) { //if user passes run to completion mode
+		cout << "run to completion mode" << endl;
+		// need to implement running of program with parseLine
+		int i;
+		for (i = 0; i < (2*1024 / 4); i++) {
+			parseLine(text[i]);
+		}
+		
 	} else { //single step through program
-
+		cout << "single step mode" << endl;
 
 		while (1) {
 			string input;
 			cin >> input;
+			cout << "input: " << input << endl;
 
 			//  p reg print a specific register (e.g., p 4, prints the contents in hex of register 4)
 			//	p all print the contents of all registers, including the PC, HI, & LO in hex
@@ -544,25 +567,29 @@ int main(int argc, char* argv[]) {
 
 			if (input == "p all") {
 				for (int i=0; i<32; i++) {
-					printf("%x", &registers[i]);
+					cout << hex << registers[i] << endl;
 				}
 			} else if (input.at(0) == 'p') {
-				int regnum = atoi(input.substr(2, input.size()-2));
-				printf("%x", &registers[regnum]);
+				int registerNum;
+				// these don't work for some reason, maybe going beyond the end of the string
+				sscanf(input.substr(2, input.size()-2).c_str(), "%d", &registerNum);
+				cout << hex << registers[registerNum] << endl;
 			}
 
-			if (input =="d addr") {
-				int addr = atoi(input.substr(2, input.size()-2));
-				printf("%x", &registers[regnum]);
+			if (input.at(0) == 'd') {
+				int addr;
+				sscanf (input.substr(2).c_str(), "%x", &addr);
+				cout << hex << getAddress(addr) << endl;
 			}
 
-			if (input == "s") {
-				int num = atoi(input.substr(2, input.size()-2));
+			if (input.at(0) == 's') {
+				int numSkip;
+				sscanf (input.substr(2, input.size()-2).c_str(), "%d", &numSkip);
 				int i;
 				int instr;
-				for (int i = 0; i < num; i++) {
+				for (i = 0; i < numSkip; i++) {
 					instr = text[pc];
-					cout << "Instruction: " << instr << end1;
+					cout << "Instruction: " << hex << instr << endl;
 					parseLine(instr);
 				}
 
@@ -570,4 +597,6 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
+    cout << "end of program" << endl;
+	return 0;
 }
