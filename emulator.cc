@@ -30,6 +30,7 @@ int getAddress(int address) {
 //  		return text[address - 0x00400000];
 // 	}
 
+
 	if (address > 0x10010000) {
 		return staticData[address - 0x10010000];
 	}
@@ -155,10 +156,12 @@ void sll(int dreg, int a, unsigned int c) {
 //SRA rd, ra, c
 void sra(int dreg, int a, int c) {
 
-	int i;
 	int sum = 0;
-	for (i = 1; i < c; i++) {
-		sum += 2^(31-i);
+	if(a < 0){
+		int i;
+		for (i = 0; i < c; i++) {
+			sum += -1*(2^(31-i));
+		}
 	}
 	registers[dreg] = (registers[a] >> c) + (sum * (registers[2] >> 31));
 }
@@ -474,7 +477,7 @@ void parseLine(int instruction) {
 		cout << "not a valid instruction" << endl;
 		break;
 	}
-	
+
 	// increment program pointer
 	pc += 1;
 }
@@ -495,7 +498,7 @@ void readFile(string filename) {
 		}
 		myfile.close();
 	}
-	
+
 	int textSize;
 	unsigned int j;
 	for (j=0; j<entireFile.size(); j++) {
@@ -537,7 +540,7 @@ void readFile(string filename) {
 int main(int argc, char* argv[]) {
 	registers[29] = 0x7fffeffc;
 	pc = 0;
-	
+
 	cout << "argc = " << argc << endl;
 //    string fileName = "./sum.o";
 //	cout << fileName << endl;
@@ -563,7 +566,6 @@ int main(int argc, char* argv[]) {
 			cout << "parseline: " << text[pc] << endl;
 			parseLine(text[pc]);
 		}
-		
 	} else if (mode == 1) { //single step through program
 		cout << "single step mode------" << endl;
 
