@@ -20,10 +20,6 @@ int pc;  //Program counter
 int hireg;
 int loreg;
 
-int mode;
-//mode 0 = run to completion
-//mode 1 = step through program
-
 int getAddress(int address) {
 	if (address>0x7fffeffc && address < 0x00400000) {
 		return stack[address - 0x7fffeffc];
@@ -542,8 +538,13 @@ int main(int argc, char* argv[]) {
 	string fileName;
 	cout << "Enter name of instruction file: ";
     cin >> fileName;
+    cout << "Choose Mode (0:Run to completion; 1:Single step): ";
+    int mode;
+    cin >> mode;
+    //mode 0 = run to completion
+    //mode 1 = step through program
     readFile(fileName);
-	if (argv[1] != 0) { //if user passes run to completion mode
+	if (mode == 0) { //if user passes run to completion mode
 		cout << "run to completion mode" << endl;
 		// need to implement running of program with parseLine
 		int i;
@@ -551,7 +552,7 @@ int main(int argc, char* argv[]) {
 			parseLine(text[i]);
 		}
 		
-	} else { //single step through program
+	} else if (mode == 1) { //single step through program
 		cout << "single step mode" << endl;
 
 		while (1) {
