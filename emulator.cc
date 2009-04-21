@@ -204,45 +204,45 @@ void sltiu(int dreg, int a, int c) {
 
 void beq(int a, int b, int c) {
 	if (registers[a] == registers[b])
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void bgez(int a, int c) {
 	if (registers[a] >= 0)
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void bgtz(int a, int c) {
 	if (registers[a] > 0)
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void blez(int a, int c) {
 	if (registers[a] <= 0)
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void bltz(int a, int c) {
 	if (registers[a] < 0)
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void bne(int a, int b, int c) {
 	if (registers[a] != registers[b])
-		pc += c / 4;
+		pc += 4 + c*4;
 }
 
 void jump(int c) {
-	pc = c/4;
+	pc = (pc & 0xF0000000) + c*4;
 }
 
 void jal(int c) {
-	pc = c/4;
-	registers[31] = pc + 1;
+	pc = (pc & 0xF0000000) + c*4;;
+	registers[31] = pc + 4;
 }
 
 void jr(int a) {
-	pc = registers[a] / 4;
+	pc = (pc & 0xF0000000) + registers[a]*4;
 }
 
 void mfhi(int a) {
